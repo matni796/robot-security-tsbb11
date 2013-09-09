@@ -1,0 +1,741 @@
+#LyX 2.0 created this file. For more info see http://www.lyx.org/
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language swedish
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman default
+\font_sans default
+\font_typewriter courier
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 1
+\use_mathdots 1
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 1
+\tocdepth 3
+\paragraph_separation skip
+\defskip smallskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Gitintro
+\end_layout
+
+\begin_layout Abstract
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+noindent 
+\end_layout
+
+\end_inset
+
+Detta är ett introduktionsdokument som i snabba drag beskriver hur man använder
+ Git.
+ Dokumentet består utav två delar.
+ Den första delen beskriver hur man installerar och konfigurerar Git samt
+ vissa tips på hur man bör använda det medans den andra delen beskriver
+ arbetsflödet för att införa ett litet stycke med ny funktionalitet.
+ Beskrivningen av arbetsflödet bör ses som regler för exakt hur vi ska använda
+ Git och om man inte vet vad man pysslar med så bör man inte frångå dom.
+\end_layout
+
+\begin_layout Part
+Införskaffa Git
+\end_layout
+
+\begin_layout Standard
+Skapa ett konto på github.com.
+\end_layout
+
+\begin_layout Standard
+För windows så finns det viss nödvändig mjukvara som även om det ej är strikt
+ nödvändigt är starkt rekommenderad att installera och konfigurera.
+ I denna guide förutsätts att all mjukvara är installerad och länkarna går
+ till rekommenderade versionen (2013-09-09).
+\end_layout
+
+\begin_layout Standard
+Notationsvarning: hemmapp, profilmapp och ~ syftar allihopa på din användarmapp
+ (vanligtvis 
+\begin_inset Quotes eld
+\end_inset
+
+C:
+\backslash
+Users
+\backslash
+username
+\begin_inset Quotes erd
+\end_inset
+
+) du kan komma till din hemmap genom att skriva %userprofile% i kör prompten.
+\end_layout
+
+\begin_layout Section
+Mjukvara att installera
+\end_layout
+
+\begin_layout Standard
+Akta dig för crapware i installationsprogrammen.
+\end_layout
+
+\begin_layout Description
+Putty 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://the.earth.li/~sgtatham/putty/latest/x86/putty-0.63-installer.exe"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Description
+Tortoisegit 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://tortoisegit.googlecode.com/files/TortoiseGit-1.8.5.0-64bit.msi"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Description
+Notepad++ 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://download.tuxfamily.org/notepadplus/6.4.5/npp.6.4.5.Installer.exe"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Description
+Msysgit 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://code.google.com/p/msysgit/downloads/detail?name=Git-1.8.3-preview20130601.exe&can=2&q="
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Description
+Console2 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://sourceforge.net/projects/console/files/latest/download?source=files"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Putty
+\end_layout
+
+\begin_layout Standard
+Installera med normala inställningar, när den har kört färdigt så ska du
+ generera en ssh-nyckel med puttygen.
+ Starta puttygen och följ instruktionerna för att generera en ssh-nyckel.
+ Ssh-nyckeln fungerar som ett lösenord som är sparat lokalt på datorn.
+ Spara den färdiga nyckeln som puttykey.ppk i din hemmapp.
+ Kopiera in den publika delen av nyckeln till github.
+\end_layout
+
+\begin_layout Subsection
+Tortoisegit
+\end_layout
+
+\begin_layout Standard
+Tortoisegit ger diverse verktyg för att hantera git med ett behändigt gui.
+ Vi kommer främst använda git via git bash men flera tortoisegit innehåller
+ vissa verktyg som kommer vara ovärdeliga.
+\end_layout
+
+\begin_layout Subsection
+Notepad++
+\end_layout
+
+\begin_layout Standard
+Editor med syntaxmarkeringar och annat användbart.
+\end_layout
+
+\begin_layout Subsection
+Msysgit
+\end_layout
+
+\begin_layout Standard
+Git för windows, installera så att den använder putty (plink) och 
+\begin_inset Quotes eld
+\end_inset
+
+check out windows style check in unix style
+\begin_inset Quotes erd
+\end_inset
+
+.
+ När den frågar vilken sorts högerklicksmeny som ska användas (context-menu)
+ välj 
+\begin_inset Quotes eld
+\end_inset
+
+ingen
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Skapa en mapp som heter git i din hemmapp.
+ Starta notepad++ och skapa följande filer i din hemmapp:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "basicstyle={\small\ttfamily},title={npp.sh}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+#!/bin/sh
+\end_layout
+
+\begin_layout Plain Layout
+
+"C:/Program Files (x86)/Notepad++/notepad++.exe" -multiInst "$*"
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "basicstyle={\small\ttfamily},title={.gitconfig}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+[alias]
+\end_layout
+
+\begin_layout Plain Layout
+
+	st = status
+\end_layout
+
+\begin_layout Plain Layout
+
+	co = checkout
+\end_layout
+
+\begin_layout Plain Layout
+
+	lol = log --graph --pretty=oneline --abbrev-commit
+\end_layout
+
+\begin_layout Plain Layout
+
+	ls = log --graph --pretty=short --abbrev-commit
+\end_layout
+
+\begin_layout Plain Layout
+
+[core]
+\end_layout
+
+\begin_layout Plain Layout
+
+	editor = ~/npp.sh
+\end_layout
+
+\begin_layout Plain Layout
+
+[user]
+\end_layout
+
+\begin_layout Plain Layout
+
+	email = name@example.com
+\end_layout
+
+\begin_layout Plain Layout
+
+	name = Förnamn Efternamn
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Console2
+\end_layout
+
+\begin_layout Standard
+Ingen installer utan en zippad mapp, extrahera så att det ligger i hemmappen
+ (~/Console2).
+ Starta Console2.exe och tryck på edit->settings; tabs; tryck på add och
+ mata in följande:
+\end_layout
+
+\begin_layout Description
+Title Git Bash
+\end_layout
+
+\begin_layout Description
+Icon C:
+\backslash
+Program Files (x86)
+\backslash
+Git
+\backslash
+etc
+\backslash
+git.ico
+\end_layout
+
+\begin_layout Description
+Shell C:
+\backslash
+Windows
+\backslash
+SysWOW64
+\backslash
+cmd.exe /c ""C:
+\backslash
+Program Files (x86)
+\backslash
+Git
+\backslash
+bin
+\backslash
+sh.exe" --login -i"
+\end_layout
+
+\begin_layout Description
+Startup-dir %userprofile%/git
+\end_layout
+
+\begin_layout Standard
+Spara en genväg till Console2 (förslagsvis genom att pinna den på aktivitetsfält
+et)
+\end_layout
+
+\begin_layout Part
+Arbetsflöde
+\end_layout
+
+\begin_layout Standard
+Utgående från att du har ett git, filstrukturen från ovan och allting är
+ konfigurerat.
+ Man bör relativt ofta skriva git lol (git log one line) för att få en graf
+ som beskriver hur trädet ser ut, att göra detta hjälper dig få översikt
+ över vad det faktiskt är du gör.
+ Du kan också använda tortoisegits funktionalitet (högerklick->show log)
+ som också ger en bra överblick.
+\end_layout
+
+\begin_layout Section
+Klona repot
+\end_layout
+
+\begin_layout Standard
+Man måste börja med att klona repot, dvs ladda ner det som gjort hittils.
+ Från git mappen i din hemmap skriv följande
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "basicstyle={\small\ttfamily}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+git clone git@github.com:matni796/robot-security-tsbb11.git tsbb11
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Alternativt clone via tortoise-git (högerklick, clone repository)
+\end_layout
+
+\begin_layout Section
+Påbörja ny funktionalitet
+\end_layout
+
+\begin_layout Standard
+Det första man gör innan man påbörjar ny kodning är att göra en ny branch.
+ En branch är en gren där man kan utföra förändringar utan att vara rädd
+ för att man förstör för andra.
+ Alla förändringar som inte är triviala bör göras i en ny branch.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "basicstyle={\small\ttfamily}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+git checkout -b funktionalitets-beskrivning develop
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Du kan, men bör ej, göra det här via tortoise.
+\end_layout
+
+\begin_layout Section
+Skriv funktionaliteten
+\end_layout
+
+\begin_layout Standard
+Efter det så börjar man koda.
+ Då och då så kommer man till ett naturligt tillfälle att commita (minst
+ en gång per arbetstillfälle) och lägger till saker som är färdiga.
+ Det görs genom att lägga till de filer som är redo och sedan commita:
+\begin_inset listings
+lstparams "basicstyle={\small\ttfamily}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+git status
+\end_layout
+
+\begin_layout Plain Layout
+
+git add fil1
+\end_layout
+
+\begin_layout Plain Layout
+
+git add fil2
+\end_layout
+
+\begin_layout Plain Layout
+
+git commit
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+När man skriver git commit så ska man skriva ett commitmeddelande, commitmeddela
+nde skriva på följande sätt:
+\begin_inset listings
+lstparams "basicstyle={\small\ttfamily}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ISSUE-ID: Kortfattad mening som beskriver ändringen
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+Längre mening som beskriver vad man gjort och hur man gjort det.
+ Det är
+\end_layout
+
+\begin_layout Plain Layout
+
+rimligt att skriva en eller ett par paragrafer här men något som man
+\end_layout
+
+\begin_layout Plain Layout
+
+tyvärr måste hålla reda på själv är radbrott.
+ Raderna får absolut inte
+\end_layout
+
+\begin_layout Plain Layout
+
+vara längre än 72 tecken.
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+Radbrottet mellan första raden och resten av texten är obligatorisk.
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+Om det är många filer som manipulerats så kan man göra listor som 
+\end_layout
+
+\begin_layout Plain Layout
+
+beskriver förändringen:
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+ - kod.cpp Kommenterade några okommenterade funktioner
+\end_layout
+
+\begin_layout Plain Layout
+
+ - kod2.cpp Lade till grundfunktionalitet för något.
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+Och så vidare.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Det är extremt viktigt att första raden på commit-meddelandet följer den
+ här strukturen.
+ Första raden tolkas av verktyg som en identifierare för hela committen
+ och får absolut inte vara oseriöst.
+ Inga Hej eller blabla eller något annat skräp.
+\end_layout
+
+\begin_layout Standard
+Om man har många filer som man manipulerat men inte vill commita så rekommendera
+r jag starkt att använda tortoise för det här, då kan man behändigt använda
+ en check-lista och även få lite hjälp med komplettering av filnamnen (högerklic
+k->commit, så får du välja vilka filer du vill lägga till i commiten).
+\end_layout
+
+\begin_layout Section
+Uppdatera ditt git träd
+\end_layout
+
+\begin_layout Standard
+Efter att man gjort en commit så har man en bra möjlighet att uppdatera
+ sitt träd, detta bör göras minst en gång per arbetstillfälle (rimligtvis
+ precis innan man börjar arbeta för dagen) detta innebär att man hämtar
+ de förändringar som gjorts av resterande medlemmar.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "basicstyle={\small\ttfamily}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+# hämta förändringar
+\end_layout
+
+\begin_layout Plain Layout
+
+git fetch origin                         
+\end_layout
+
+\begin_layout Plain Layout
+
+# arbeta med develop-grenen
+\end_layout
+
+\begin_layout Plain Layout
+
+git checkout develop                     
+\end_layout
+
+\begin_layout Plain Layout
+
+# spola fram din lokala develop till den nyare versionen
+\end_layout
+
+\begin_layout Plain Layout
+
+git merge --ff-only origin/develop       
+\end_layout
+
+\begin_layout Plain Layout
+
+# tillbaka till din egen gren
+\end_layout
+
+\begin_layout Plain Layout
+
+git checkout funktionalitets-beskrivning 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Bör ej göras i tortoise.
+\end_layout
+
+\begin_layout Section
+Applicera dina förändringar ovanpå den senaste versionen
+\end_layout
+
+\begin_layout Standard
+Efter att du hämtat förändringar så ser man i loggen att alla dina förändringar
+ är applicerade på en äldre version av koden.
+ Detta löser man med rebase, som applicerar dina förändringar ovanpå den
+ senaste versionen.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "basicstyle={\small\ttfamily}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+git rebase develop
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Bör ej göras i tortoise.
+\end_layout
+
+\begin_layout Section
+Färdig med funktionalitet
+\end_layout
+
+\begin_layout Standard
+När du är färdig med funktionaliteten så bör du merga in den tillbaks till
+ develop.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "basicstyle={\small\ttfamily}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+git checkout develop                          # arbeta i develop
+\end_layout
+
+\begin_layout Plain Layout
+
+git merge --no-ff funktionalitets-beskrivning # stoppa in dina förändringar
+ i develop
+\end_layout
+
+\begin_layout Plain Layout
+
+git branch -d funktionalitets-beskrivning     # släng den gamla grenen
+\end_layout
+
+\begin_layout Plain Layout
+
+git push origin develop                       # skicka förändringar till
+ servern
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
