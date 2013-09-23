@@ -1,4 +1,4 @@
-1\documentclass[10pt,a4paper]{article}
+\documentclass[10pt,a4paper]{article}
 %You comment with the modulo-sign. Before the \begin keyword you put what packages
 %you want to use etc. If you want to include graphics for example you need the graphicX-package
 \usepackage{graphicx}
@@ -30,7 +30,7 @@ The requirements of the project are all assigned to different sprints. The sprin
 There are predefined safety zones for the surrounding of the robot and these will be used to decide whether the robot should continue to work as normal, slow down its working pace or simply stop.
 
 \section{System Overview}
-The system will consist of at least one kinect sensor that sends a depth image and a colour image to the computer. Together with data from the controller, which describes the robots position, it is possible to detect if anything “human-like” is entering the region of interest.
+The system will consist of at least one kinect sensor that sends a depth image and a colour image to the computer. Together with geometric data about the robot from the controller it is possible to detect if any object is entering the region of interest.
 
 \begin{figure}[H] 
   \centering
@@ -47,7 +47,7 @@ The requirements of the project are listed below. If a requirement is planned to
 This section describes the requirements of the finished product. These are the overall goals of the project. \par}
 
 \begin{enumerate}
-\item Control of the robots working pace with respect to the closest human being, sprint 3.
+\item Control of the robots working pace with respect to the closest moving object, sprint 3.
 
 {\addtolength{\leftskip}{5mm}The robot will slow down if a human being is approaching it and stop if someone gets to close.There will be three different zones around the robot. If a human is detected in zone 1, closest to the robot, the robot perform an emergency stop instantly. In zone 2 the robot will make a smooth stop and in zone 3 the robot will reduce its speed and continue its task.
 \\\\The safety zones are dynamically and will deform depending on the robot's orientation and speed. \par}
@@ -57,16 +57,18 @@ This section describes the requirements of the finished product. These are the o
 \subsection{System Interfaces}
 These section describes how the functionality of the of the program will be split into modules.
 
-\item There will be a module for tracking using statistical background models, sprint 2.
+\item There will be a module for segmentation of moving objects using statistical background models, sprint 2.
 
-{\addtolength{\leftskip}{5mm}It will be important to know what in the depth image that is background and what is objects. To know this some kind of tracking is needed. In this project statistical background modelling will be used.\par}
+{\addtolength{\leftskip}{5mm}It will be important to know what in the depth image that is background and what is objects. To know this some kind of object segmentation is needed. In this project statistical background modelling will be used.\par}
+
 \item There will be a module for generating a 3D-model from robot data,\\ sprint 2.
  
-{\addtolength{\leftskip}{5mm}The robot will give information about its orientation.This module will take that information and generate a 3D-model of it.\par}
+{\addtolength{\leftskip}{5mm}The robot will give information about its orientation. This module will take that information and generate a 3D-model of it.\par}
  
- \item There will be a module for linking data from 3D-model of robot and results from tracking, sprint 3.
+\item There will be a module for linking data from 3D-model of robot and results from segmentation of depth image, sprint 3.
 
-{\addtolength{\leftskip}{5mm}This module distinguishes the robot from other moving objects in the images.\par}
+{\addtolength{\leftskip}{5mm}This module distinguishes the robot from other moving objects in the images. This will be possible since a calibration between the coordinate system of the robot and the camera will be done. If it is necessary the colour of the robot will also be used to distinguish the robot from other moving objects.\par}
+
 
 \item There will be a module for evaluation of the complete system, sprint 4.
 
@@ -90,8 +92,8 @@ These section describes how the functionality of the of the program will be spli
 
 \subsection{Communication Interfaces}
 
-\item Data from the Kinect sensor should be available in the computer, sprint 1.
-\item Data from the robot controller should be available in the computer, sprint 1.
+\item Data from the Kinect sensor should be available in the computer, \\sprint 1.
+\item Data from the robot controller should be available in the computer, \\sprint 1.
 
 \subsection{Constraints assumptions and dependencies}
 These are the requirements that is assumed to be fulfilled for the system being able to work properly. None of them are categorized to a sprint.
@@ -100,7 +102,7 @@ These are the requirements that is assumed to be fulfilled for the system being 
 
 \item The Kinect sensor should be placed in a position so that it can overview the robot. Thit ensures that a human being will not be able to approach the robot without entering the safety zones.
 
-\item The system will not work in a pitch black environment, there is an assumption of a reasonable amount of light.
+\item The system will not work in an environment that is to bright, there is an assumption of a reasonable amount of light.
 
 \item The data used will always be the current input from camera and robot, i.e there will not be any module handling delays between inputs.
 
@@ -108,6 +110,8 @@ These are the requirements that is assumed to be fulfilled for the system being 
 This section describes the requirements of functionality for the subsystems and for the system in general.
 \item Process information from robot controller and generate 3D-data, \\sprint 2.
 \item Send control signal to the robot from computer, sprint 2.
+\item Calibrate the coordinate system of the robot to the coordinate system of the Kinect. 
+
 \item Link the robot's 3D-data to the 3D-data from the Kinect sensor, sprint 3.
 
 \item Determine the distance from the robot to the other found objects, \\sprint 3.
