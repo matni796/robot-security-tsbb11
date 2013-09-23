@@ -9,6 +9,9 @@
 \title{System overview for the Robotic Safety project}
 \author{Benjamin Ingberg \and Mattias Nilsson \and Niklas Hansson \and Olle Fridolfsson \and Patrik Hillgren \and Pär Lundgren }
 
+\setcounter{secnumdepth}{1}
+\setcounter{tocdepth}{3}
+
 \begin{document}
 \twocolumn[\maketitle]
 \clearpage
@@ -38,22 +41,15 @@ The Yaskawa SIA20 is a seven-axis robot for industrial manufacturing which is co
 
 \subsection{Yaskawa DX100 controller}
 
-
 The Yaskawa DX100 controller is based on Windows CE, it can control up to 72 axises at the same time. It has a touch screen which allow the user to perform manual based programming. By teaching the robot a set of moves it can be programmed to perform a continuous movement pattern.
-
-\subsection{Networked computing system}
-
-The system will be constructed modularly to limit the effects of hardware requirements. Each module will communicate using TCP/IP which is an error robust industry communication standard. Furthermore should one computer run several modules many implementations are smart enough to communicate through a simple memory copy making the communication overhead close to zero.
-
-Modules will communicate their task and address through UDP multicasting. Informing other modules where they will have to communicate to receive input data.
 
 \section{Subsystem overview}
 
 The computational system will consist of several subsystems which handles different parts of the algorithms.
 
-\subsection{Robot data processing}
+\subsection{Subsystem 1 - Robot data processing}
 
-The robot data subsystem will abstract away the robots positions to a 3d-model according to the internal state of the robot from the controller.
+The robot data subsystem will abstract the robots positions to a 3d-model according to the internal state of the robot from the controller.
 
 \subsubsection{Transformation of robot data}
 
@@ -65,26 +61,26 @@ Most likely this will be done using the Relative Job solution initialized with a
 
 The transformed robot data will be used to create a 3d-model of the robot. From this data we will subsequently be able to construct the safety regions.
 
-\subsection{Camera data processing}
+\subsection{Subsystem 2 - Camera data processing}
 
-From the camera system there will be a depth image and a color image that has to be calibrated and processed to 3d-models which separates background from foreground.
+From the camera system there will be a depth image and possibly a color image that has to be calibrated and processed to 3d-models which separates background from foreground.
 
 \subsubsection{Calibration}
 
-The camera system has to be calibrated, this will be done by using chessboard patterns. The calibration will take into consideration lens distortions using the 6-coefficient radial distortion and the 2-coefficient tangential distortion model.
+The camera system has to be calibrated, this will be done by using chessboard patterns. The calibration will take into consideration radial and tangential distortions using OpenCV's distortion models.
 
 By taking several pictures using a chessboard pattern in different angles the camera intrinsic parameters can be estimated, since the intrinsics should be constant this will only have to be done before installation. Afterward the camera extrinsics can be extrapolated by solving the perspective n-point (PnP) problem for a pattern which has a fix relation to the robot's coordinate system.
 
 By covering the kinect's IR-projector, either through software or mechanically, and looking directly at the IR-image the same methodology can be used to calibrate the depth camera.
 These standard algorithm are already implemented in Open CV.\cite{opencv-calibration}
 
-\subsubsection{Background modelling and tracking}
+\subsubsection{Background modelling and segmentation}
 
-Regions of the images corresponding to background and foreground will have to be separated. For this a per-pixel model will be used where frequent pixel values will be considered background and rare pixel-values will be considered foreground.
+Regions of the images corresponding to background and foreground will have to be separated. For this a statistical background model will be used.
 
 There are several available background models implemented in Open CV with differing performance and suitability. After result evaluations one of these will be chosen.
 
-\subsection{Merging subsystem}
+\subsection{Subsystem 3 - Merging subsystem}
 
 The merging subsystem takes information from the two previous subsystems and perform the necessary calculations to determine distance between the robot position (as determined from the internal robot state) and the detected objects (as determined from the background modelling and depth camera).
 
@@ -96,9 +92,7 @@ This data will be combined to determine if there is any movement in the robot sa
 
 \subsubsection{Visualization}
 
-Visualization will be crucial to understand this system, since the depth camera gives us a point-cloud and the image camera gives us a texture for the point cloud, 3d-visualization will be implemented with Open GL. Using information from the background model it will be possible to visualize regions that are occluded.
-
-Visualization will be performed locally based on the data transmitted by the network.
+Visualization will be crucial to understand this system, since the depth camera gives us a point-cloud and the image camera gives us a texture for the point cloud, 3d-visualization will be implemented with OpenGL. Using information from the background model it will be possible to visualize regions that are occluded.
 
 \subsubsection{Robot control signals}
 
