@@ -20,11 +20,11 @@ Olle Fridolfsson (ollfr940) \\  Niklas Hansson (nikha310) \\ Patrik Hillgren (pa
 \newpage
 \noindent %Just makes it so that the first paragraph isn't indented
 \section{Introduction}
-This document will specify the requirements for the Robotics Safety project that is a part of the course TSBB11 at LiU, held at CVL.
+This document specifies the requirements for the Robotics Safety project that is a part of the course TSBB11 at LiU, held at CVL.
 \section{Purpose and goal}
-The purpose of the project is to develop a system that monitors the surroundings of industrial robots and allows humans to safely work side-by-side with them. 
+The purpose of the project is to develop a system that monitors the surrounding of industrial robots and allows humans to safely work side-by-side with them. 
 The goal is to provide a system that meets the expectation of Yaskawa Nordic AB.
-The requirements of the project are all assigned to different sprints. The sprints are not definitive but can be changed depending on how much time the different requirements take to fulfill. 
+The requirements of the project are all assigned to different sprints. The sprints are vividly defined and can be changed depending on how much time the different requirements take to fulfill. 
 
 \section{Definitions}
 There are predefined safety zones for the surrounding of the robot and these will be used to decide whether the robot should continue to work as normal, slow down its working pace or simply stop.
@@ -41,7 +41,7 @@ The system will consist of at least one kinect sensor that sends a depth image a
 
 
 \section{Requirements}
-The requirements of the project are listed below. If a requirement is planned to be solved in specific sprint, it is marked with the number of that sprint. 
+The requirements of the project are listed below. If a requirement is planned to be solved in a specific sprint, it is marked with the number of that sprint. 
 {\addtolength{\leftskip}{10mm}
 \subsection{Product Requirements}
 This section describes the requirements of the finished product. These are the overall goals of the project. \par}
@@ -49,30 +49,30 @@ This section describes the requirements of the finished product. These are the o
 \begin{enumerate}
 \item Control of the robots working pace with respect to the closest moving object, sprint 3.
 
-{\addtolength{\leftskip}{5mm}The robot will slow down if a human being is approaching it and stop if someone gets to close.There will be three different zones around the robot. If a human is detected in zone 1, closest to the robot, the robot perform an emergency stop instantly. In zone 2 the robot will make a smooth stop and in zone 3 the robot will reduce its speed and continue its task.
-\\\\The safety zones are dynamically and will deform depending on the robot's orientation and speed. \par}
+{\addtolength{\leftskip}{5mm}The robot will slow down if a human being is approaching it and stop if someone gets to close.There will be three different zones around the robot. If a human is detected in zone 1, closest to the robot, the robot performs an emergency stop instantly. In zone 2 the robot will make a smooth stop and in zone 3 the robot will reduce its speed and continue its task.
+\\\\The safety zones are dynamical and will deform depending on the robot's orientation and speed. \par}
 
-\item Evaluation of the products performance and reliability using an automatic system, sprint 4.
+\item Evaluation of the product's performance and reliability using an automatic system, sprint 4.
 
 \subsection{System Interfaces}
 These section describes how the functionality of the of the program will be split into modules.
 
 \item There will be a module for segmentation of moving objects using statistical background models, sprint 2.
 
-{\addtolength{\leftskip}{5mm}It will be important to know what in the depth image that is background and what is objects. To know this some kind of object segmentation is needed. In this project statistical background modelling will be used.\par}
+{\addtolength{\leftskip}{5mm}It will be important to know what in the depth image is background and what are objects. To know this, object segmentation is needed. In this project, statistical background modelling will be used.\par}
 
 \item There will be a module for generating a 3D-model from robot data,\\ sprint 2.
  
-{\addtolength{\leftskip}{5mm}The robot will give information about its orientation. This module will take that information and generate a 3D-model of it.\par}
+{\addtolength{\leftskip}{5mm}The robot will give information about its orientation. This module will take that information and generate a 3D-robot model.\par}
  
-\item There will be a module for linking data from 3D-model of robot and results from segmentation of depth image, sprint 3.
+\item There will be a module for linking data from the 3D-robot model and the results from the segmentation of the depth image, sprint 3.
 
 {\addtolength{\leftskip}{5mm}This module distinguishes the robot from other moving objects in the images. This will be possible since a calibration between the coordinate system of the robot and the camera will be done. If it is necessary the colour of the robot will also be used to distinguish the robot from other moving objects.\par}
 
 
 \item There will be a module for evaluation of the complete system, sprint 4.
 
-{\addtolength{\leftskip}{5mm}This module will compute distances to humans, gives an accuracy measurement feedback and displays the number of moving objects in the environment. 
+{\addtolength{\leftskip}{5mm}This module will compute distances to moving objects and determine in which saftey zone an object is. From this there will be possible to display the number of moving objects in the robot's environment. 
 \par}
 
 \item There will be a module for controlling the robot via the remote control, sprint 3.
@@ -82,7 +82,7 @@ These section describes how the functionality of the of the program will be spli
 
 \item There will be a module for real-time visualization of all 3D-data,\\ sprint 3.
 
-{\addtolength{\leftskip}{5mm}There will be an interactive environment where the robot and other 3D-data is visualized.\par}
+{\addtolength{\leftskip}{5mm}There will be an 2D-environment where the robot and other 3D-data is visualized.\par}
 
 \subsection{Hardware Interfaces}
 
@@ -92,15 +92,13 @@ These section describes how the functionality of the of the program will be spli
 
 \subsection{Communication Interfaces}
 
-\item Data from the Kinect sensor should be available in the computer, \\sprint 1.
-\item Data from the robot controller should be available in the computer, \\sprint 1.
+\item Data from the Kinect sensor should be available in the computer, \\sprint 2.
+\item Data from the robot controller should be available in the computer, \\sprint 2.
 
 \subsection{Constraints assumptions and dependencies}
 These are the requirements that is assumed to be fulfilled for the system being able to work properly. None of them are categorized to a sprint.
 
-\item The robot will not be occluded from the point of view of the camera.
-
-\item The Kinect sensor should be placed in a position so that it can overview the robot. Thit ensures that a human being will not be able to approach the robot without entering the safety zones.
+\item The Kinect sensor should be placed in a position so that it can overview the robot. This ensures that a human being will not be able to approach the robot without entering the safety zones.
 
 \item The system will not work in an environment that is to bright, there is an assumption of a reasonable amount of light.
 
@@ -108,9 +106,10 @@ These are the requirements that is assumed to be fulfilled for the system being 
 
 \subsection{Functional requirements}
 This section describes the requirements of functionality for the subsystems and for the system in general.
+\item The system will work if the kinect is placed such that occlusion is minimized. 
 \item Process information from robot controller and generate 3D-data, \\sprint 2.
 \item Send control signal to the robot from computer, sprint 2.
-\item Calibrate the coordinate system of the robot to the coordinate system of the Kinect. 
+\item Calibrate the coordinate system of the robot to the coordinate system of the Kinect, sprint 3. 
 
 \item Link the robot's 3D-data to the 3D-data from the Kinect sensor, sprint 3.
 
@@ -121,18 +120,6 @@ This section describes the requirements of functionality for the subsystems and 
 \item Detect a human being that is entering the area of interest, sprint 4.
 
 \item Track objects in the image using statistical background models, sprint 2.
-
-\subsection{Documentation requirements}
-This section describes which documents are required by the project. The deadline of the document is also specified.
-\item Design Specification, 24/9, sprint 1.
-\item Project Plan, 24/9, sprint 1.
-\item Requirement Specification, 24/9, sprint 1.
-\item Technical documentation of the project, 13/12,  sprint 4.
-\item Summary of the completed backlog after every sprint.
-\item Web-page displaying the results, 13/12, sprint 4.
-
-
-
 
 \end{enumerate}
 
