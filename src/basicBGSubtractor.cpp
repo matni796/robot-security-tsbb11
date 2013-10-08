@@ -28,7 +28,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 {
 	try
 	{
-		cv_ptr = cv_bridge::toCvCopy(msg, enc::TYPE_32FC1);
+		cv_ptr = cv_bridge::toCvCopy(msg, "");
   	}
   	catch (cv_bridge::Exception& e)
   	{
@@ -38,14 +38,14 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 	//cv::Mat frame(cv_ptr->image.size().width, cv_ptr->image.size().height, CV_8UC3,cv_ptr->image);
 	int nanCount = 0;
   	cv::Mat back, fore, frame;
-	/*for(int i = 0; i<=cv_ptr->image.rows;++i){
+	for(int i = 0; i<=cv_ptr->image.rows;++i){
 		for(int k = 0; k<=cv_ptr->image.cols;++k){	
 			if(cv_ptr->image.at<float>(i,k) != cv_ptr->image.at<float>(i,k)){
 				cv_ptr->image.at<float>(i,k) = 0;
 				++nanCount;
 			}
 		}
-	}*/
+	}
 	cout <<"nanCOunt: " << nanCount << "number of pixels "<< 640*480   << endl;
 	channels.clear();
 	channels.push_back(cv_ptr->image);
@@ -53,16 +53,16 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 	channels.push_back(cv_ptr->image);
 	cout << "i am receiving something" << endl;
 	cv::merge(channels,frame);
-	bg->operator()(frame, fore, 0.9);  	
+	bg->operator()(frame, fore, -1);  	
 	bg->getBackgroundImage(back);
 	//cv::erode(fore,fore,cv::Mat());
         //cv::dilate(fore,fore,cv::Mat());
-        cv::findContours(fore,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
-        cv::drawContours(frame,contours,-1,cv::Scalar(0,0,255),2);
+        //cv::findContours(fore,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
+        //cv::drawContours(frame,contours,-1,cv::Scalar(0,0,255),2);
        
 	cv::imshow("Foreground", fore);
 	cv::imshow("Frame",frame/6);
-        cv::imshow("Background",back);
+        cv::imshow("Background",back*50);
         cv::waitKey(10);
   	//image_pub_.publish(cv_ptr->toImageMsg());*/
 }
@@ -96,15 +96,17 @@ int main (int argc, char** argv)
 	cv::namedWindow("Foreground");
 	ros::init (argc, argv, "testKinect");
   	ros::NodeHandle nh;
-	bg = new cv::BackgroundSubtractorMOG2(1000, 4.0f, false);
-	bg->set("nmixtures", 3);
+	bg = new cv::BackgroundSubtractorMOG2(10000, 0.040f, false);
+	bg->set("nmixtures", 10);
+	cout << "olle är kingen!" << endl;
+
 	//bg->set("nframes", 1000);
 	//bg.set("bShadowDetection", false);//bg.nmixtures = 3;
 	//bg.bShadowDetection = false;
 	//bg.nchannels = 1;
   	// Create a ROS subscriber for the input point cloud
-  	ros::Subscriber sub = nh.subscribe ("/camera/depth/image", 10, imageCb);
-  	//ros::Subscriber sub2= nh.subscribe ("/camera/depth/image", 10, imageCb2);
+  	ros::Subscriber sub = nh.subscribe("/camera/depth/image", 10, imageCb);
+	//ros::Subscriber sub2= nh.subscribe ("/camera/depth/image", 10, imageCb2);
   	// Create a ROS publisher for the output point cloud
   	//pub = nh.advertise<sensor_msgs::PointCloud2> ("output", 1);
 
