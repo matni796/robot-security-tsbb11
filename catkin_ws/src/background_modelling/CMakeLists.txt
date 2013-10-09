@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   stereo_msgs
   camera_calibration_parsers
+  pcl
+  pcl_ros
 )
 find_package(OpenCV REQUIRED)
 

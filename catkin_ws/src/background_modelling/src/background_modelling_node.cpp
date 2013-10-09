@@ -1,5 +1,8 @@
 #include <ros/ros.h>
 // PCL specific includes
+#include <pcl-1.6/pcl/point_cloud.h>
+#include <pcl-1.6/pcl/ros/conversions.h>
+#include <pcl-1.6/pcl/point_types.h>
 #include <iostream>
 #include <sensor_msgs/image_encodings.h>
 #include <cv_bridge/cv_bridge.h>
@@ -12,7 +15,6 @@
 #include "camera_calibration_parsers/parse.h"
 #include "camera_calibration_parsers/parse_ini.h"
 #include "camera_calibration_parsers/parse_yml.h"
-#include <boost/algorithm/string/predicate.hpp>
 
 using namespace std;
 
@@ -50,25 +52,31 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 			}
 		}
 	}
-	cout <<"nanCOunt: " << nanCount << "number of pixels "<< 640*480   << endl;
-	channels.clear();
-	channels.push_back(cv_ptr->image);
-	channels.push_back(cv_ptr->image);
-	channels.push_back(cv_ptr->image);
-	cout << "i am receiving something" << endl;
-	cv::merge(channels,frame);
-	bg->operator()(frame, fore, -1);  	
-	bg->getBackgroundImage(back);
+		cout <<"nanCOunt: " << nanCount << "number of pixels "<< 640*480   << endl;
+		channels.clear();
+		channels.push_back(cv_ptr->image);
+		channels.push_back(cv_ptr->image);
+		channels.push_back(cv_ptr->image);
+		cout << "i am receiving something" << endl;
+		cv::merge(channels,frame);
+		bg->operator()(frame, fore, -1);
+		bg->getBackgroundImage(back);
 	//cv::erode(fore,fore,cv::Mat());
         //cv::dilate(fore,fore,cv::Mat());
         cv::findContours(fore,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
         cv::drawContours(frame,contours,-1,cv::Scalar(0,0,255),2);
        
-	cv::imshow("Foreground", fore);
-	cv::imshow("Frame",frame/6);
+        cv::imshow("Foreground", fore);
+		cv::imshow("Frame",frame/6);
         cv::imshow("Background",back*50);
         cv::waitKey(10);
-  	//image_pub_.publish(cv_ptr->toImageMsg());*/
+
+       // for()
+
+        //pub_.publish(cv_ptr->toImageMsg());*/
+
+
+
 }
 float getWorldCoord(float f, float c, float zWorld, int screenCoord)
 {
@@ -98,25 +106,18 @@ float getWorldCoord(float f, float c, float zWorld, int screenCoord)
 }*/
 int main (int argc, char** argv)
 {
-	//cv::FileStorage fs("/home/niklas/.ros/camera_info/depth_A00367A00428051A.yaml", cv::FileStorage::READ);
-
-	int width;
-	//fs["image_width:"] >> width;
-	//int width = (int)fs["image_width"];
-	//fs["camera_matrix"] >> cameraMatrix;
-	//cout << width << endl;
-	//cout << cameraMatrix << endl;
+	// Import camera intrinsic
 	const string path = "/home/niklas/.ros/camera_info/depth_A00367A00428051A.yaml";
 	string cameraName;
 	sensor_msgs::CameraInfo camInfo;
 	camera_calibration_parsers::readCalibration(path, cameraName, camInfo);
 
+	// Elements from projection matrix needed for PC construction
 	float fx, fy, cx, cy;
 	fx = camInfo.P.elems[0];
 	cx = camInfo.P.elems[2];
 	fy = camInfo.P.elems[5];
 	cy = camInfo.P.elems[6];
-	//camInfo.P
 
   // Initialize ROS and openCV windows
  	cv::namedWindow("Frame");
