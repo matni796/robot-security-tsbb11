@@ -32,11 +32,8 @@ std::vector<cv::Mat> channels;
 
 // Elements from projection matrix needed for PC construction
 float fx, fy, cx, cy;
-
 pcl::visualization::CloudViewer viewer("Clod viewer");
-
 std::vector<pcl::PointXYZ> cloud;
-
 namespace enc = sensor_msgs::image_encodings;
 
 float getWorldCoord(float f, float c, float zWorld, int screenCoord)
@@ -66,27 +63,25 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 			}
 		}
 	}
-		//cout <<"nanCOunt: " << nanCount << "number of pixels "<< 640*480   << endl;
-		channels.clear();
-		cv::Mat depth = cv_ptr->image;
-		channels.push_back(cv_ptr->image);
-		channels.push_back(cv_ptr->image);
-		channels.push_back(cv_ptr->image);
+	//cout <<"nanCOunt: " << nanCount << "number of pixels "<< 640*480   << endl;
+	channels.clear();
+	cv::Mat depth = cv_ptr->image;
+	channels.push_back(cv_ptr->image);
+	channels.push_back(cv_ptr->image);
+	channels.push_back(cv_ptr->image);
 
-		cv::merge(channels,frame);
-		bg->operator()(frame, fore, -1);
-		bg->getBackgroundImage(back);
-		cv::erode(fore,fore,cv::Mat());
+	cv::merge(channels,frame);
+	bg->operator()(frame, fore, -1);
+	bg->getBackgroundImage(back);
+	cv::erode(fore,fore,cv::Mat());
         cv::dilate(fore,fore,cv::Mat());
         //cv::findContours(fore,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
         //cv::drawContours(frame,contours,-1,cv::Scalar(0,0,255),2);
-        cv::imshow("Foreground", fore);
-		cv::imshow("Frame",frame/6.0f);
-        cv::imshow("Background",back*50);
-        cv::waitKey(10);
-
+        //cv::imshow("Foreground", fore);
+	//cv::imshow("Frame",frame/6.0f);
+        //cv::imshow("Background",back*50);
+        //cv::waitKey(10);
         cloud.clear();
-
         float x,y,z;
 
        for(int u = 0; u < fore.cols; u++)
@@ -104,16 +99,20 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
     	   }
 
        }
-
-
+	
+	
 
        // Visualization of PC
-       /*
-       pcl::PointCloud<pcl::PointXYZ>::Ptr myCloud(new pcl::PointCloud<pcl::PointXYZ>());
-       myCloud->insert(myCloud->begin(), cloud.begin(), cloud.end());
-       viewer.showCloud(myCloud);
-       myCloud->clear();
-       */
+       
+       	pcl::PointCloud<pcl::PointXYZ>::Ptr myCloud(new pcl::PointCloud<pcl::PointXYZ>());
+      	myCloud->insert(myCloud->begin(), cloud.begin(), cloud.end());
+       	//sensor_msgs::PointCloud2 msg;
+	
+	//pcl::toROSMsg(myCloud, msg);
+	pub.publish(myCloud);
+	//viewer.showCloud(myCloud);
+       	myCloud->clear();
+       
 }
 
 int main (int argc, char** argv)
@@ -145,7 +144,7 @@ int main (int argc, char** argv)
 	//bg.bShadowDetection = false;
 	//bg.nchannels = 1;
   	// Create a ROS subscriber for the input point cloud
-
+	pub = nh.advertise<sensor_msgs::PointCloud2>("foregroundCloud",10);
   	ros::Subscriber sub = nh.subscribe("/camera/depth/image", 10, imageCb);
   	// Create a ROS publisher for the output point cloud
   	//pub = nh.advertise<sensor_msgs::PointCloud2> ("output", 1);
