@@ -79,7 +79,8 @@ void downsample(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc,
 
 void clustering(const sensor_msgs::PointCloud2ConstPtr& input)
 {
-
+	printf("Received Point Cloud: %dx%d\n", input->height, input->width);
+	//ROS_INFO("Received Point Cloud: %d.", input.height);
 	boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc(new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::fromROSMsg<pcl::PointXYZ>(*input,*pc);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
@@ -95,11 +96,11 @@ void clustering(const sensor_msgs::PointCloud2ConstPtr& input)
 
 int main (int argc, char** argv)
 {
-	ros::init (argc, argv, "testKinect");
+	ros::init (argc, argv, "clustering");
 	viewer.reset(new pcl::visualization::CloudViewer("Simple Cloud Viewer"));
 
 	ros::NodeHandle nh;
-	ros::Subscriber sub = nh.subscribe ("/camera/depth/points", 1, clustering);
-	chatter_pub = nh.advertise<sensor_msgs::PointCloud2>("clusterCloud", 1);
+	ros::Subscriber sub = nh.subscribe ("foreground_cloud", 1, clustering);
+	chatter_pub = nh.advertise<sensor_msgs::PointCloud2>("cluster_cloud", 1);
 	ros::spin ();
 }
