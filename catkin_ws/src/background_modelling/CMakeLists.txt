@@ -6,6 +6,8 @@ project(background_modelling)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
+  pcl
+  pcl_ros
   roscpp
   sensor_msgs
   std_msgs
