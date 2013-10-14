@@ -4,6 +4,7 @@
 #include <pcl-1.6/pcl/ros/conversions.h>
 #include <pcl-1.6/pcl/point_types.h>
 #include <pcl-1.6/pcl/visualization/cloud_viewer.h>
+#include <pcl_ros/point_cloud.h>
 #include <iostream>
 #include <sensor_msgs/image_encodings.h>
 #include <cv_bridge/cv_bridge.h>
@@ -32,7 +33,7 @@ std::vector<cv::Mat> channels;
 
 // Elements from projection matrix needed for PC construction
 float fx, fy, cx, cy;
-pcl::visualization::CloudViewer viewer("Clod viewer");
+//pcl::visualization::CloudViewer viewer("Clod viewer");
 std::vector<pcl::PointXYZ> cloud;
 namespace enc = sensor_msgs::image_encodings;
 
@@ -77,10 +78,10 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
         cv::dilate(fore,fore,cv::Mat());
         //cv::findContours(fore,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
         //cv::drawContours(frame,contours,-1,cv::Scalar(0,0,255),2);
-        //cv::imshow("Foreground", fore);
-	//cv::imshow("Frame",frame/6.0f);
-        //cv::imshow("Background",back*50);
-        //cv::waitKey(10);
+        cv::imshow("Foreground", fore);
+	cv::imshow("Frame",frame/6.0f);
+        cv::imshow("Background",back*50);
+        cv::waitKey(10);
         cloud.clear();
         float x,y,z;
 
@@ -118,7 +119,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 int main (int argc, char** argv)
 {
 	// Import camera intrinsic
-	const string path = "/home/niklas/.ros/camera_info/depth_A00367A00428051A.yaml";
+	const string path = "/home/matt/dev/robot-security-tsbb11/catkin_ws/camMat.yaml";
 	string cameraName;
 	sensor_msgs::CameraInfo camInfo;
 	camera_calibration_parsers::readCalibration(path, cameraName, camInfo);
@@ -137,15 +138,14 @@ int main (int argc, char** argv)
   	ros::NodeHandle nh;
 	bg = new cv::BackgroundSubtractorMOG2(1000, 0.040f, false);
 	bg->set("nmixtures", 10);
-	cout << "olle är kingen!" << endl;
 
 	//bg->set("nframes", 1000);
 	//bg.set("bShadowDetection", false);//bg.nmixtures = 3;
 	//bg.bShadowDetection = false;
 	//bg.nchannels = 1;
   	// Create a ROS subscriber for the input point cloud
-	pub = nh.advertise<sensor_msgs::PointCloud2>("foregroundCloud",10);
-  	ros::Subscriber sub = nh.subscribe("/camera/depth/image", 10, imageCb);
+	pub = nh.advertise<sensor_msgs::PointCloud2>("foreground_cloud",1);
+  	ros::Subscriber sub = nh.subscribe("/camera/depth/image", 1, imageCb);
   	// Create a ROS publisher for the output point cloud
   	//pub = nh.advertise<sensor_msgs::PointCloud2> ("output", 1);
 
