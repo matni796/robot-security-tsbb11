@@ -142,5 +142,5 @@ include_directories(
 # catkin_add_nosetests(test)
 
 add_executable(clustering src/clusterextraction.cpp)
-target_link_libraries(clustering ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(clustering ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} )
 

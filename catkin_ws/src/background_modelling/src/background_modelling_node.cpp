@@ -55,15 +55,21 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
     		return;
   	}
 	int nanCount = 0;
-  	cv::Mat back, fore, frame;
-	for(int i = 0; i<=cv_ptr->image.rows;++i){
-		for(int k = 0; k<=cv_ptr->image.cols;++k){	
+  	cv::Mat back, fore, frame;/*
+	for(int i = 1; i<=cv_ptr->image.rows;++i){
+		for(int k = 1; k<=cv_ptr->image.cols;++k){
 			if(cv_ptr->image.at<float>(i,k) != cv_ptr->image.at<float>(i,k)){
-				cv_ptr->image.at<float>(i,k) = 0;
-				++nanCount;
+				if(cv_ptr->image.at<float>(i-1,k) == cv_ptr->image.at<float>(i-1,k))
+					cv_ptr->image.at<float>(i,k) = cv_ptr->image.at<float>(i-1,k);
+				else if(cv_ptr->image.at<float>(i,k-1) == cv_ptr->image.at<float>(i,k-1))
+					cv_ptr->image.at<float>(i,k) = cv_ptr->image.at<float>(i,k-1);
+				else
+					cv_ptr->image.at<float>(i,k) = 5;
+				//cv_ptr->image.at<float>(i,k) = 0;
+				//++nanCount;
 			}
 		}
-	}
+	}*/
 	//cout <<"nanCOunt: " << nanCount << "number of pixels "<< 640*480   << endl;
 	channels.clear();
 	cv::Mat depth = cv_ptr->image;
@@ -74,8 +80,23 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 	cv::merge(channels,frame);
 	bg->operator()(frame, fore, -1);
 	bg->getBackgroundImage(back);
+
+
+	for(int u = 0; u < fore.cols; u++)
+	       {
+	    	   for(int v = 0; v < fore.rows; v++)
+	    	   {
+	    		   if (depth.at<float>(v,u) != depth.at<float>(v,u))
+	    			   fore.at<char>(v,u) = 0;
+	    	   }
+	       }
+
 	cv::erode(fore,fore,cv::Mat());
+	cv::erode(fore,fore,cv::Mat());
+
         cv::dilate(fore,fore,cv::Mat());
+        cv::dilate(fore,fore,cv::Mat());
+
         //cv::findContours(fore,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
         //cv::drawContours(frame,contours,-1,cv::Scalar(0,0,255),2);
         cv::imshow("Foreground", fore);
@@ -93,9 +114,11 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
     		   if(fore.at<char>(v,u) != 0)
     		   {
     			   z = depth.at<float>(v,u);
-    			   x = getWorldCoord(fx,cx,z,u);
-    			   y = getWorldCoord(fy,cy,z,v);
-    			   cloud.push_back(pcl::PointXYZ(x,y,z));
+    			   if(z == z){
+    				   x = getWorldCoord(fx,cx,z,u);
+    				   y = getWorldCoord(fy,cy,z,v);
+    				   cloud.push_back(pcl::PointXYZ(x,y,z));
+    			   }
     		   }
     	   }
 
@@ -119,7 +142,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 int main (int argc, char** argv)
 {
 	// Import camera intrinsic
-	const string path = "/home/matt/dev/robot-security-tsbb11/catkin_ws/camMat.yaml";
+	const string path = "/home/niklas/dev/tsbb11/catkin_ws/camMat.yaml";
 	string cameraName;
 	sensor_msgs::CameraInfo camInfo;
 	camera_calibration_parsers::readCalibration(path, cameraName, camInfo);
