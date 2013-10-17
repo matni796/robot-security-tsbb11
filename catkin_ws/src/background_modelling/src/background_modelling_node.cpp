@@ -86,7 +86,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 			if(fore.at<char>(v,u) != 0)
 			{
 				z = depth.at<float>(v,u);
-				if(z != z)
+				if(z == z)
 				{
 					x = getWorldCoord(fx,cx,z,u);
 					y = getWorldCoord(fy,cy,z,v);
@@ -95,6 +95,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 			}
 		}
 	}
+	cloud.push_back(pcl::PointXYZ(0.0f,0.0f,0.0f));
 
 	// Publish point cloud
 	pcl::PointCloud<pcl::PointXYZ>::Ptr myCloud(new pcl::PointCloud<pcl::PointXYZ>());
