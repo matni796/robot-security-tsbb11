@@ -73,7 +73,7 @@ void downsample(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc,
 		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered){
 	pcl::VoxelGrid<pcl::PointXYZ> vg;
 	vg.setInputCloud(pc);
-	vg.setLeafSize(0.01f, 0.01f, 0.01f);
+	vg.setLeafSize(0.1f, 0.1f, 0.1f);
 	vg.filter(*cloud_filtered);
 }
 
