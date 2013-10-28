@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   std_msgs
   stereo_msgs
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -29,11 +30,10 @@ find_package(catkin REQUIRED COMPONENTS
 #######################################
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+ add_message_files(
+   FILES
+   distanceMessage.msg
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -58,6 +58,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
+    CATKIN_DEPENDS message_runtime
 #  INCLUDE_DIRS include
 #  LIBRARIES distanceCalc
 #  CATKIN_DEPENDS cv_bridge pcl pcl_ros roscpp sensor_msgs std_msgs std_msgs stereo_msgs
