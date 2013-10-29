@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
+  camera_calibration_parsers
 )
 
 ## System dependencies are found with CMake's conventions

@@ -48,6 +48,8 @@
   <run_depend>roscpp</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>camera_calibration_parsers</run_depend>
+  <build_depend>camera_calibration_parsers</build_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
