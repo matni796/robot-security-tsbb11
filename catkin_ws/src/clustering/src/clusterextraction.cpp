@@ -32,9 +32,11 @@ namespace enc = sensor_msgs::image_encodings;
 ros::Publisher chatter_pub;
 //vector<PointCloud2...> temp;
 boost::shared_ptr<pcl::visualization::CloudViewer> viewer;
-vector<vector<Point32>> returnVector;
-vector<Point32> clusterPoints;
 
+vector<vector<geometry_msgs::Point32> > returnVector;
+vector<geometry_msgs::Point32> clusterPoints;
+geometry_msgs::Point32 p32;
+vector<int> test;
 void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) {
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
 	tree->setInputCloud(pc);
@@ -54,18 +56,19 @@ void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) 
 
 	int color = 0;
 	returnVector.clear();
+	test.push_back(1);
 	for(std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it) {
 		clusterPoints.clear();
 		for(std::vector<int>::const_iterator jt = it->indices.begin(); jt != it->indices.end(); ++jt) {
 			pcl::PointXYZRGB p(r[color%6], g[color%6], b[color%6]);
 			pcl::PointXYZ p2 = pc->points[*jt];
-			p.x = p2.x;
-			p.y = p2.y;
-			p.z = p2.z;
+			p32.x = p2.x;
+			p32.y = p2.y;
+			p32.z = p2.z;
 			//TODO: Remove colors? // May be changed and should istead be in tracking part?
 			//pushback in i punktmoln.
 			cloud_cluster.push_back(p);
-			clusterPoints.push_back(p);
+			clusterPoints.push_back(p32);
 		}
 		returnVector.push_back(clusterPoints);
 		++color;
@@ -75,7 +78,7 @@ void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) 
 	myCloud->insert(myCloud->begin(), cloud_cluster.begin(), cloud_cluster.end());
 	viewer->showCloud(myCloud);
 
-	chatter_pub.publish(returnVector);
+	chatter_pub.publish(test);
 
 }
 void downsample(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc,
@@ -110,6 +113,6 @@ int main (int argc, char** argv)
 
 	ros::NodeHandle nh;
 	ros::Subscriber sub = nh.subscribe ("foreground_cloud", 1, clustering);
-	chatter_pub = nh.advertise<vector<vector<Point32>>("cluster_vectors", 1);
+	chatter_pub = nh.advertise< vector<int> >("cluster_vectors",1);
 	ros::spin ();
 }
