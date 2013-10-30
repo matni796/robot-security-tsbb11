@@ -29,6 +29,7 @@ using namespace std;
 
 namespace enc = sensor_msgs::image_encodings;
 ros::Publisher chatter_pub;
+//vector<PointCloud2...> temp;
 boost::shared_ptr<pcl::visualization::CloudViewer> viewer;
 
 void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) {
@@ -38,27 +39,29 @@ void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) 
 	std::vector<pcl::PointXYZRGB> cloud_cluster;
 	std::vector<pcl::PointIndices> cluster_indices;
 	pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-	ec.setClusterTolerance (0.05); // 2cm
+	ec.setClusterTolerance (0.05); // 5cm
 	ec.setMinClusterSize (800);
 	ec.setMaxClusterSize (25000);
 	ec.setSearchMethod(tree);
 	ec.setInputCloud(pc);
 	ec.extract(cluster_indices);
-
 	int r[] = { 255,   0,   0, 255,   0, 255 };
 	int g[] = {   0, 255,   0, 255, 255,   0 };
 	int b[] = {   0,   0, 255,   0, 255, 255 };
 
 	int color = 0;
 	for(std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it) {
+		//skapa ett punktmoln.
 		for(std::vector<int>::const_iterator jt = it->indices.begin(); jt != it->indices.end(); ++jt) {
 			pcl::PointXYZRGB p(r[color%6], g[color%6], b[color%6]);
 			pcl::PointXYZ p2 = pc->points[*jt];
 			p.x = p2.x;
 			p.y = p2.y;
 			p.z = p2.z;
+			//pushback in i punktmoln.
 			cloud_cluster.push_back(p);
 		}
+		//pushback in i vectorn.
 		++color;
 	}
 
