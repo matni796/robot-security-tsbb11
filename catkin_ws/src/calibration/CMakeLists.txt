@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   camera_calibration_parsers
+  image_transport
 )
 
 ## System dependencies are found with CMake's conventions
