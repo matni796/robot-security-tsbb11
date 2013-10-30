@@ -25,18 +25,21 @@
 #include <pcl-1.6/pcl/kdtree/kdtree.h>
 #include <pcl-1.6/pcl/filters/filter.h>
 #include <pcl-1.6/pcl/filters/voxel_grid.h>
-#include <geometry_msgs/Point32.h>
+#include <clustering/point.h>
+#include <clustering/clusterArray.h>
+#include <clustering/pointArray.h>
 using namespace std;
 
 namespace enc = sensor_msgs::image_encodings;
 ros::Publisher chatter_pub;
 //vector<PointCloud2...> temp;
+
+clustering::clusterArray clusterArr;
+clustering::point point;
+clustering::pointArray pointArr;
+
 boost::shared_ptr<pcl::visualization::CloudViewer> viewer;
 
-vector<vector<geometry_msgs::Point32> > returnVector;
-vector<geometry_msgs::Point32> clusterPoints;
-geometry_msgs::Point32 p32;
-vector<int> test;
 void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) {
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
 	tree->setInputCloud(pc);
@@ -55,22 +58,31 @@ void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) 
 	int b[] = {   0,   0, 255,   0, 255, 255 };
 
 	int color = 0;
-	returnVector.clear();
-	test.push_back(1);
+	point.x = 1;
+	point.y  =2 ;
+	point.z = 3;
+
+
+	clusterArr.ca.clear();
 	for(std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it) {
-		clusterPoints.clear();
+		pointArr.pa.clear();
 		for(std::vector<int>::const_iterator jt = it->indices.begin(); jt != it->indices.end(); ++jt) {
 			pcl::PointXYZRGB p(r[color%6], g[color%6], b[color%6]);
 			pcl::PointXYZ p2 = pc->points[*jt];
-			p32.x = p2.x;
-			p32.y = p2.y;
-			p32.z = p2.z;
+			p.x = p2.x;
+			p.y = p2.y;
+			p.z = p2.z;
+
+			point.x = p2.x;
+			point.y = p2.y;
+			point.z = p2.z;
+
 			//TODO: Remove colors? // May be changed and should istead be in tracking part?
 			//pushback in i punktmoln.
 			cloud_cluster.push_back(p);
-			clusterPoints.push_back(p32);
+			pointArr.pa.push_back(point);
 		}
-		returnVector.push_back(clusterPoints);
+		clusterArr.ca.push_back(pointArr);
 		++color;
 	}
 
@@ -78,7 +90,7 @@ void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) 
 	myCloud->insert(myCloud->begin(), cloud_cluster.begin(), cloud_cluster.end());
 	viewer->showCloud(myCloud);
 
-	chatter_pub.publish(test);
+	chatter_pub.publish(clusterArr);
 
 }
 void downsample(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc,
@@ -89,7 +101,7 @@ void downsample(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc,
 	vg.filter(*cloud_filtered);
 }
 
-void clustering(const sensor_msgs::PointCloud2ConstPtr& input)
+void clusterExtraction(const sensor_msgs::PointCloud2ConstPtr& input)
 {
 	printf("Received Point Cloud: %dx%d\n", input->height, input->width);
 	//ROS_INFO("Received Point Cloud: %d.", input.height);
@@ -112,7 +124,7 @@ int main (int argc, char** argv)
 	viewer.reset(new pcl::visualization::CloudViewer("Simple Cloud Viewer"));
 
 	ros::NodeHandle nh;
-	ros::Subscriber sub = nh.subscribe ("foreground_cloud", 1, clustering);
-	chatter_pub = nh.advertise< vector<int> >("cluster_vectors",1);
+	ros::Subscriber sub = nh.subscribe("foreground_cloud", 1, clusterExtraction);
+	chatter_pub = nh.advertise<clustering::clusterArray>("cluster_vectors",1);
 	ros::spin ();
 }
