@@ -1,9 +1,1 @@
-Header header
-float32 robotx
-float32 roboty
-float32 robotz
-float32 pointx
-float32 pointy
-float32 pointz
-float32 dist
-
+pcl::PointXYZ testPoint

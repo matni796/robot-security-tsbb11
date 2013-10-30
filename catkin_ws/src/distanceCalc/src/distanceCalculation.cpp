@@ -19,9 +19,12 @@
 #include <pcl-1.6/pcl/common/norms.h>
 #include <math.h>
 #include <std_msgs/Float32MultiArray.h>
+#include <distanceCalc/distanceMessage.h>
 using namespace std;
 
 
+
+distanceCalc::distanceMessage dm;
 
 /*ros::Publisher chatter_pub;
 ros::NodeHandle nh;
@@ -30,6 +33,7 @@ pcl::PointXYZ p;
 pcl::PointXYZ p2;
 pcl::PointXYZ minPoint;
 pcl::PointXYZ closestJoint;
+
 */int numberOfClusters;
 //vector<pcl::PointXYZ> robotJoint(new pcl::PointXYZ(10,10,10),new pcl::PointXYZ(10,10,100));
 std_msgs::Float32MultiArray returnArray;
@@ -42,6 +46,7 @@ void testMessages(){
 	returnArray.layout.dim[1].size = numberOfClusters;
 	returnArray.layout.dim[1].stride = 7;
 
+	cout << dm << endl;
 }
 int main (int argc, char** argv)
 {
@@ -63,7 +68,6 @@ vector<pcl::PointXYZ> compareToRobot(pcl::PointXYZ ps){
 			minPoint = ps;
 			closestJoint = robotJoint[i];
 		}
-
 	}
 }
 void distanceCalc(vector<vector<pcl::PointXYZ> > vec){
@@ -75,7 +79,6 @@ void distanceCalc(vector<vector<pcl::PointXYZ> > vec){
 			p.z = vec[j][i].z;
 			distance = compareToRobot(p);
 		}
-
 	}
 }
 int main (int argc, char** argv)
