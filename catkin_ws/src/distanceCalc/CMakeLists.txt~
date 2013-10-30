@@ -27,6 +27,6 @@ CATKIN_DEPENDS message_runtime
 
 add_executable(distanceCalc src/distanceCalculation.cpp)
 target_link_libraries(distanceCalc ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_INCLUDE_DIRS})
-add_dependencies(distanceCalc distanceCalc_gencpp)
+add_dependencies(msg distanceCalc_gencpp)
 
 
