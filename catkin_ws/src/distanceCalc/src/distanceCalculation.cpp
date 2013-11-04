@@ -25,7 +25,7 @@
 #include <clustering/pointArray.h>
 using namespace std;
 
-
+float minDistance;
 pcl::PointXYZ point;
 pcl::PointXYZ p;
 vector<pcl::PointXYZ> robotJoint(new pcl::PointXYZ(10,10,10),new pcl::PointXYZ(10,10,100));
@@ -34,40 +34,13 @@ pcl::PointXYZ closestJoint;
 float distance;
 std_msgs::Float32MultiArray returnArray;
 int numberOfClusters;
-/*ros::Publisher chatter_pub;
 ros::NodeHandle nh;
 ros::Subscriber sub;
-
-pcl::PointXYZ p2;
-
-
-int numberOfClusters;
-//
-
-void testMessages(){
-	numberOfClusters = 2;
-	returnArray.layout.dim.resize(2);
-	returnArray.data.resize(numberOfClusters*7);
-	returnArray.layout.dim[0].size = 7;
-	returnArray.layout.dim[0].stride = 7*numberOfClusters;
-	returnArray.layout.dim[1].size = numberOfClusters;
-	returnArray.layout.dim[1].stride = 7;
-
-	cout << dm << endl;
-}
-int main (int argc, char** argv)
-{
-	//ros::init (argc, argv, "testMessages");
-	//sub = nh.subscribe("test", 1,testMessages);
-	//chatter_pub = nh.advertise<ReturnObject>("distances", 1);
-//ros::spin ();
-	testMessages();
-}
- */
+ros::Publisher chatter_pub;
 
 
 void compareToRobot(float x, float y, float z){
-	float minDistance = 10000.0f;
+
 
 	for(int i = 0; i < robotJoint.size(); i++){
 		distance = powf(robotJoint[i].x-x, 2)+powf(robotJoint[i].y-y, 2)+powf(robotJoint[i].z-z, 2);
@@ -92,18 +65,19 @@ void distanceCalc(clustering::clusterArray clusters){
 	returnArray.layout.dim[1].stride = 7;
 
 	for(int j = 0; j<clusters.ca.size();j++){
+		minDistance = 10000.0f;
 		for(int i = 0; i<clusters.ca[j].pa.size(); i++){
 			compareToRobot(clusters.ca[j].pa[i].x, clusters.ca[j].pa[i].y, clusters.ca[j].pa[i].z);
 		}
-		returnArray.data[j][0] = 5;
-		returnArray.data[j][1] = 5;
-		returnArray.data[j][2] = 5;
-		returnArray.data[j][3] = 5;
-		returnArray.data[j][4] = 5;
-		returnArray.data[j][5] = 5;
-		returnArray.data[j][6] = 5;
-
+		returnArray.data[j][0] = minPoint.x;
+		returnArray.data[j][1] = minPoint.x;
+		returnArray.data[j][2] = minPoint.x;
+		returnArray.data[j][3] = closestJoint.x;
+		returnArray.data[j][4] = closestJoint.y;
+		returnArray.data[j][5] = closestJoint.z;
+		returnArray.data[j][6] = minDistance;
 	}
+	chatter_pub.publish(returnArray);
 }
 int main (int argc, char** argv)
 {
