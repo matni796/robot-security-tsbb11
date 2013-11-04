@@ -1,1 +1,0 @@
-closestPointInfo[] clusterInfo

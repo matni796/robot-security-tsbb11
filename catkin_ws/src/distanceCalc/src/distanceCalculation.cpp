@@ -19,7 +19,6 @@
 #include <pcl-1.6/pcl/common/norms.h>
 #include <math.h>
 #include <std_msgs/Float32MultiArray.h>
-#include <distanceCalc/distanceMessage.h>
 #include <clustering/point.h>
 #include <clustering/clusterArray.h>
 #include <clustering/pointArray.h>
@@ -31,10 +30,10 @@ pcl::PointXYZ p;
 vector<pcl::PointXYZ> robotJoint(new pcl::PointXYZ(10,10,10),new pcl::PointXYZ(10,10,100));
 pcl::PointXYZ minPoint;
 pcl::PointXYZ closestJoint;
-float distance;
+//float distance;
 std_msgs::Float32MultiArray returnArray;
 int numberOfClusters;
-ros::NodeHandle nh;
+
 ros::Subscriber sub;
 ros::Publisher chatter_pub;
 
@@ -43,7 +42,7 @@ void compareToRobot(float x, float y, float z){
 
 
 	for(int i = 0; i < robotJoint.size(); i++){
-		distance = powf(robotJoint[i].x-x, 2)+powf(robotJoint[i].y-y, 2)+powf(robotJoint[i].z-z, 2);
+		float distance = powf(robotJoint[i].x-x, 2)+powf(robotJoint[i].y-y, 2)+powf(robotJoint[i].z-z, 2);
 		if (distance <= minDistance)
 		{
 			minDistance = distance;
@@ -55,6 +54,7 @@ void compareToRobot(float x, float y, float z){
 	}
 }
 void distanceCalc(clustering::clusterArray clusters){
+
 
 	numberOfClusters = clusters.ca.size();
 	returnArray.layout.dim.resize(2);
@@ -69,20 +69,22 @@ void distanceCalc(clustering::clusterArray clusters){
 		for(int i = 0; i<clusters.ca[j].pa.size(); i++){
 			compareToRobot(clusters.ca[j].pa[i].x, clusters.ca[j].pa[i].y, clusters.ca[j].pa[i].z);
 		}
-		returnArray.data[j][0] = minPoint.x;
-		returnArray.data[j][1] = minPoint.x;
-		returnArray.data[j][2] = minPoint.x;
-		returnArray.data[j][3] = closestJoint.x;
-		returnArray.data[j][4] = closestJoint.y;
-		returnArray.data[j][5] = closestJoint.z;
-		returnArray.data[j][6] = minDistance;
+		returnArray.data[0+j*7] = minPoint.x;
+		returnArray.data[1+j*7] = minPoint.x;
+		returnArray.data[2+j*7] = minPoint.x;
+		returnArray.data[3+j*7] = closestJoint.x;
+		returnArray.data[4+j*7] = closestJoint.y;
+		returnArray.data[5+j*7] = closestJoint.z;
+		returnArray.data[6+j*7] = minDistance;
+		ROS_INFO("%f",minDistance);
 	}
 	chatter_pub.publish(returnArray);
 }
 int main (int argc, char** argv)
 {
 	ros::init (argc, argv, "distanceCalc");
-	sub = nh.subscribe ("cluster_cloud", 1, distanceCalc);
+	ros::NodeHandle nh;
+	sub = nh.subscribe ("cluster_vectors", 1, distanceCalc);
 	chatter_pub = nh.advertise<std_msgs::Float32MultiArray>("distances", 1);
 	ros::spin ();
 }

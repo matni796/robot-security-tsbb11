@@ -1,1 +1,0 @@
-distanceMessage[] closestPointInfo

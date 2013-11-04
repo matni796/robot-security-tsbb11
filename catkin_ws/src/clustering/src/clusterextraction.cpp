@@ -32,7 +32,6 @@ using namespace std;
 
 namespace enc = sensor_msgs::image_encodings;
 ros::Publisher chatter_pub;
-//vector<PointCloud2...> temp;
 
 clustering::clusterArray clusterArr;
 clustering::point point;

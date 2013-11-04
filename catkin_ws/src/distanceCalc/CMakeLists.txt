@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   stereo_msgs
   message_generation
 )
-add_message_files(FILES distanceMessage.msg)
+#add_message_files(FILES )
 #add_service_files()
 #add_action_files()
 generate_messages(DEPENDENCIES std_msgs)
@@ -27,6 +27,6 @@ CATKIN_DEPENDS message_runtime
 
 add_executable(distanceCalc src/distanceCalculation.cpp)
 target_link_libraries(distanceCalc ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_INCLUDE_DIRS})
-add_dependencies(distanceCalc distanceCalc_gencpp)
+#add_dependencies(distanceCalc distanceCalc_gencpp)
 
 
