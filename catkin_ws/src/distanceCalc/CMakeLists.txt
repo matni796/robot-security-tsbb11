@@ -18,14 +18,6 @@ generate_messages(DEPENDENCIES
   stereo_msgs
 )
 
-
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES distanceCalc
-#  CATKIN_DEPENDS cv_bridge pcl pcl_ros roscpp sensor_msgs std_msgs std_msgs stereo_msgs
-#  DEPENDS system_lib
-)
-
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
@@ -35,11 +27,6 @@ include_directories(
 catkin_package(
 CATKIN_DEPENDS message_runtime
 )
-
-add_executable(distanceCalc src/distanceCalculation.cpp)
-target_link_libraries(distanceCalc ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_INCLUDE_DIRS})
-
-
 
 add_executable(distanceCalc src/distanceCalculation.cpp)
 target_link_libraries(distanceCalc ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_INCLUDE_DIRS})
