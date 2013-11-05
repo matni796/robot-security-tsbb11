@@ -40,10 +40,13 @@ clustering::pointArray pointArr;
 boost::shared_ptr<pcl::visualization::CloudViewer> viewer;
 void printPC(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc){
 	cout << "*********************" << endl;
-	cout << "Info from point cloud: Height: " + pc->height + " Width: " + pc->width << endl;
-	for(int i = 0; i<pc->height; ++i){
-		cout << pc->points << endl;
-	}
+	cout << "Info from point cloud: Height:" << endl;
+	cout << pc->height << endl;
+	cout <<"Width: " << endl;
+	cout << pc->width << endl;
+	//for(int i = 0; i<pc->height; ++i){
+	//	cout << pc->points << endl;
+	//}
 	cout << "*********************" << endl;
 }
 void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) {
@@ -112,6 +115,8 @@ void clusterExtraction(const sensor_msgs::PointCloud2ConstPtr& input)
 	pcl::fromROSMsg<pcl::PointXYZ>(*input,*pc);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
 	downsample(pc,cloud_filtered);
+
+	printf("Received Point Cloud: %dx%d\n", cloud_filtered->height, cloud_filtered->width);
 
 	if(viewer->wasStopped()) {
 		cout << "viewer was stopped\n";
