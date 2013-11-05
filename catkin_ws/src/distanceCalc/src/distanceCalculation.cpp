@@ -63,6 +63,8 @@ void distanceCalc(clustering::clusterArray clusters){
 	returnArray.layout.dim[0].stride = 7*numberOfClusters;
 	returnArray.layout.dim[1].size = numberOfClusters;
 	returnArray.layout.dim[1].stride = 7;
+	cout << "Size of clusterArray (outer) " << endl;
+	cout << clusters.ca.size() << endl;
 
 	for(int j = 0; j<clusters.ca.size();j++){
 		minDistance = 10000.0f;
@@ -76,8 +78,13 @@ void distanceCalc(clustering::clusterArray clusters){
 		returnArray.data[4+j*7] = closestJoint.y;
 		returnArray.data[5+j*7] = closestJoint.z;
 		returnArray.data[6+j*7] = minDistance;
-		ROS_INFO("%f",minDistance);
+		//ROS_INFO("%f",minDistance);
+		cout << "Printing mindistance:" << endl;
+		cout << "MINDISTANCE" << endl;
+		cout << returnArray.data[6+j*7] << endl;
+		cout << ("%f",minDistance)	<< endl;
 	}
+	cout << "Publishibng returnArray..." << endl;
 	chatter_pub.publish(returnArray);
 }
 int main (int argc, char** argv)
