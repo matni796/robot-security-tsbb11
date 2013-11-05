@@ -38,10 +38,18 @@ clustering::point point;
 clustering::pointArray pointArr;
 
 boost::shared_ptr<pcl::visualization::CloudViewer> viewer;
-
+void printPC(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc){
+	cout << "*********************" << endl;
+	cout << "Info from point cloud: Height: " + pc->height + " Width: " + pc->width << endl;
+	for(int i = 0; i<pc->height; ++i){
+		cout << pc->points << endl;
+	}
+	cout << "*********************" << endl;
+}
 void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) {
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
 	tree->setInputCloud(pc);
+	printPC(pc);
 	//TODO: Resize image input (Needed for speedup of calculation..)
 	std::vector<pcl::PointXYZRGB> cloud_cluster;
 	std::vector<pcl::PointIndices> cluster_indices;
@@ -57,10 +65,6 @@ void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) 
 	int b[] = {   0,   0, 255,   0, 255, 255 };
 
 	int color = 0;
-	point.x = 1;
-	point.y  =2 ;
-	point.z = 3;
-
 
 	clusterArr.ca.clear();
 	for(std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it) {
@@ -93,7 +97,7 @@ void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) 
 
 }
 void downsample(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc,
-		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered){
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered){
 	pcl::VoxelGrid<pcl::PointXYZ> vg;
 	vg.setInputCloud(pc);
 	vg.setLeafSize(0.1f, 0.1f, 0.1f);
