@@ -22,6 +22,7 @@
 #include <clustering/point.h>
 #include <clustering/clusterArray.h>
 #include <clustering/pointArray.h>
+#include "DistanceHandler.hpp"
 using namespace std;
 
 float minDistance;

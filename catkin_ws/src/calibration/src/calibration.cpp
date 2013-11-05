@@ -134,7 +134,7 @@ int main (int argc, char** argv)
 	ros::init (argc, argv, "calibration");
 	ros::NodeHandle nh;
 	ros::Subscriber sub = nh.subscribe("/camera/rgb/image_mono", 1, calibrate);
-	pub = nh.advertise<std_msgs::Float64MultiArray>("calibrationdata",1);
+	pub = nh.advertise<std_msgs::Float64MultiArray>("calibration_data",1);
 	ros::spin ();
 }
 
