@@ -25,7 +25,7 @@
 using namespace std;
 
 ros::Publisher pub;
-string fileName = "/home/matt/dev/robot-security-tsbb11/catkin_ws/camMatRGB.yaml";
+string fileName;
 cv_bridge::CvImagePtr cv_ptr;
 cv::Mat intrinsics, distortion;
 vector<cv::Point3f> boardPoints;
@@ -34,6 +34,18 @@ cv::Size patternsize(8,6);
 string cameraName;
 sensor_msgs::CameraInfo camInfo;
 std_msgs::Float64MultiArray calibrationData;
+
+std::string getEnvVar( std::string const & key ) {
+  char * val;
+  val = getenv( key.c_str() );
+  std::string retval = "";
+  if (val != NULL) {
+    retval = val;
+  } else {
+	  cerr << "Warning! Environmentvariable " << key << " is not set!";
+  }
+  return retval;
+}
 
 void calibrate(const sensor_msgs::ImageConstPtr& msg)
 {
@@ -53,7 +65,7 @@ void calibrate(const sensor_msgs::ImageConstPtr& msg)
 
 	if (corners.size() == 48){
 		cv::solvePnP(boardPoints, corners, intrinsics, distortion, rvec, tvec, false);
-	}
+
 		calibrationData.layout.dim.resize(2);
 		calibrationData.layout.dim[0].label = "vectors";
 		calibrationData.layout.dim[0].size = 2;
@@ -64,19 +76,45 @@ void calibrate(const sensor_msgs::ImageConstPtr& msg)
 
 		calibrationData.data.resize(6);
 
-	for (int i=0;i<3;i++){
+		for (int i=0;i<3;i++){
 			calibrationData.data[i+3] = tvec.at<double>(i,0);
 			calibrationData.data[i] = rvec.at<double>(i,0);
 		}
 
-	pub.publish(calibrationData);
+		pub.publish(calibrationData);
+
+		cv::Mat rotationMatrix(3,3,cv::DataType<double>::type);
+
+		cv::Rodrigues(rvec,rotationMatrix);
+
+		//	cout << "tvec: " << tvec << endl;
+		//	cout << "boardPoint: " << boardPoints[1] << endl;
+		//	cout << "rotationMatrix: " << rotationMatrix << endl;
+		cout << "result: ";
+
+		cv::Mat boardPoint = (cv::Mat_<double>(3,1) << 0.0f,0.04f,0.0f);
+
+		//cv::Mat resultingPoint =rotationMatrix*boardPoint + tvec;
+
+
+
+
+		//boardPoints.at<cv::Point3f>(1);
+
+
+		//cv::Mat resultingPoint(rotationMatrix*boardPoints[1]+ tvec);
+
+		//cout << resultingPoint<< endl;
+
+
+	}
 
 }
 
 
 int main (int argc, char** argv)
 {
-	camera_calibration_parsers::readCalibration(fileName, cameraName, camInfo);
+	camera_calibration_parsers::readCalibration( getEnvVar("CAMERA_MATRIX_PATH")+"/camMatRGB.yaml", cameraName, camInfo);
 
 	float fx = camInfo.P.elems[0];
 	float cx = camInfo.P.elems[2];

@@ -36,6 +36,19 @@ const float normFact = 255.0f/6.0f;			// Normalization factor
 std::vector<pcl::PointXYZ> cloud;				// Point cloud
 namespace enc = sensor_msgs::image_encodings;
 
+std::string getEnvVar( std::string const & key ) {
+  char * val;
+  val = getenv( key.c_str() );
+  std::string retval = "";
+  if (val != NULL) {
+    retval = val;
+  } else {
+	  cerr << "Warning! Environmentvariable " << key << " is not set!";
+  }
+  return retval;
+}
+
+
 float getWorldCoord(float f, float c, float zWorld, int screenCoord)
 {
 	return (screenCoord - c)*zWorld/f;
@@ -109,7 +122,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 int main (int argc, char** argv)
 {
 	// Import camera intrinsic
-	const string path = "/home/niklas/dev/tsbb11/catkin_ws/camMat.yaml";
+	const string path = getEnvVar("CAMERA_MATRIX_PATH")+"/camMat.yaml";
 	string cameraName;
 	sensor_msgs::CameraInfo camInfo;
 	camera_calibration_parsers::readCalibration(path, cameraName, camInfo);
