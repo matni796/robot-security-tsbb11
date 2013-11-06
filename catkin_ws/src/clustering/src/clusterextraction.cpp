@@ -32,44 +32,32 @@ using namespace std;
 
 namespace enc = sensor_msgs::image_encodings;
 ros::Publisher chatter_pub;
-
 clustering::clusterArray clusterArr;
 clustering::point point;
 clustering::pointArray pointArr;
 
-boost::shared_ptr<pcl::visualization::CloudViewer> viewer;
-void printPC(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc){
-	cout << "*********************" << endl;
-	cout << "Info from point cloud: Height:" << endl;
-	cout << pc->height << endl;
-	cout <<"Width: " << endl;
-	cout << pc->width << endl;
-	//for(int i = 0; i<pc->height; ++i){
-	//	cout << pc->points << endl;
-	//}
-	cout << "*********************" << endl;
-}
 void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) {
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
 	tree->setInputCloud(pc);
-	printPC(pc);
 	//TODO: Resize image input (Needed for speedup of calculation..)
 	std::vector<pcl::PointXYZRGB> cloud_cluster;
 	std::vector<pcl::PointIndices> cluster_indices;
 	pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-	ec.setClusterTolerance (0.05); // 5cm
+	ec.setClusterTolerance (0.1); // 2cm
 	ec.setMinClusterSize (800);
 	ec.setMaxClusterSize (25000);
 	ec.setSearchMethod(tree);
 	ec.setInputCloud(pc);
 	ec.extract(cluster_indices);
-	int r[] = { 255,   0,   0, 255,   0, 255 };
-	int g[] = {   0, 255,   0, 255, 255,   0 };
-	int b[] = {   0,   0, 255,   0, 255, 255 };
+
+	int r[] = { 255, 0, 0, 255, 0, 255 };
+	int g[] = { 0, 255, 0, 255, 255, 0 };
+	int b[] = { 0, 0, 255, 0, 255, 255 };
 
 	int color = 0;
 
 	clusterArr.ca.clear();
+
 	for(std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end(); ++it) {
 		pointArr.pa.clear();
 		for(std::vector<int>::const_iterator jt = it->indices.begin(); jt != it->indices.end(); ++jt) {
@@ -83,27 +71,32 @@ void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) 
 			point.y = p2.y;
 			point.z = p2.z;
 
-			//TODO: Remove colors? // May be changed and should istead be in tracking part?
-			//pushback in i punktmoln.
 			cloud_cluster.push_back(p);
 			pointArr.pa.push_back(point);
 		}
-		clusterArr.ca.push_back(pointArr);
 		++color;
+		clusterArr.ca.push_back(pointArr);
 	}
 
-	pcl::PointCloud<pcl::PointXYZRGB>::Ptr myCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
-	myCloud->insert(myCloud->begin(), cloud_cluster.begin(), cloud_cluster.end());
-	viewer->showCloud(myCloud);
+//	cout << cloud_cluster.size() << endl;
+//	cout << clusterArr.ca.size() << endl;
+//	if(clusterArr.ca.size() > 0 ){
+//		cout << clusterArr.ca[0].pa.size() << endl;
+//
+//	}
+//	if(clusterArr.ca.size() > 1 ){
+//		cout << clusterArr.ca[1].pa.size() << endl;
+//
+//	}
 
 	chatter_pub.publish(clusterArr);
 
 }
 void downsample(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc,
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered){
+		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered){
 	pcl::VoxelGrid<pcl::PointXYZ> vg;
 	vg.setInputCloud(pc);
-	vg.setLeafSize(0.1f, 0.1f, 0.1f);
+	vg.setLeafSize(0.01f, 0.01f, 0.01f);
 	vg.filter(*cloud_filtered);
 }
 
@@ -116,11 +109,8 @@ void clusterExtraction(const sensor_msgs::PointCloud2ConstPtr& input)
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
 	downsample(pc,cloud_filtered);
 
-	printf("Received Point Cloud: %dx%d\n", cloud_filtered->height, cloud_filtered->width);
+	printf("Downsampled Point Cloud: %dx%d\n", cloud_filtered->height, cloud_filtered->width);
 
-	if(viewer->wasStopped()) {
-		cout << "viewer was stopped\n";
-	}
 	std::vector<int> indices;
 	pcl::removeNaNFromPointCloud(*cloud_filtered,*cloud_filtered,indices);
 	euclidianClustering(cloud_filtered);
@@ -129,10 +119,8 @@ void clusterExtraction(const sensor_msgs::PointCloud2ConstPtr& input)
 int main (int argc, char** argv)
 {
 	ros::init (argc, argv, "clustering");
-	viewer.reset(new pcl::visualization::CloudViewer("Simple Cloud Viewer"));
-
 	ros::NodeHandle nh;
-	ros::Subscriber sub = nh.subscribe("foreground_cloud", 1, clusterExtraction);
-	chatter_pub = nh.advertise<clustering::clusterArray>("cluster_vectors",1);
+	ros::Subscriber sub = nh.subscribe ("foreground_cloud", 1, clusterExtraction);
+	chatter_pub = nh.advertise<clustering::clusterArray>("cluster_vectors", 1);
 	ros::spin ();
 }
