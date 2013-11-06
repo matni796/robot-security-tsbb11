@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+
 // PCL specific includes
 #include <memory>
 #include <iostream>
@@ -24,7 +25,7 @@
 #include <clustering/pointArray.h>
 #include "DistanceHandler.hpp"
 using namespace std;
-
+/*
 float minDistance;
 pcl::PointXYZ point;
 pcl::PointXYZ p;
@@ -87,12 +88,13 @@ void distanceCalc(clustering::clusterArray clusters){
 	}
 	cout << "Publishibng returnArray..." << endl;
 	chatter_pub.publish(returnArray);
-}
+}*/
 int main (int argc, char** argv)
 {
 	ros::init (argc, argv, "distanceCalc");
 	ros::NodeHandle nh;
-	sub = nh.subscribe ("cluster_vectors", 1, distanceCalc);
-	chatter_pub = nh.advertise<std_msgs::Float32MultiArray>("distances", 1);
+	DistanceHandler distanceHandler(nh);
+	//sub = nh.subscribe ("cluster_vectors", 1, distanceCalc);
+	//chatter_pub = nh.advertise<std_msgs::Float32MultiArray>("diances", 1);
 	ros::spin ();
 }

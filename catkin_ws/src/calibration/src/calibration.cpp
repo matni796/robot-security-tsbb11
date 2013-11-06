@@ -80,33 +80,7 @@ void calibrate(const sensor_msgs::ImageConstPtr& msg)
 			calibrationData.data[i+3] = tvec.at<double>(i,0);
 			calibrationData.data[i] = rvec.at<double>(i,0);
 		}
-
 		pub.publish(calibrationData);
-
-		cv::Mat rotationMatrix(3,3,cv::DataType<double>::type);
-
-		cv::Rodrigues(rvec,rotationMatrix);
-
-		//	cout << "tvec: " << tvec << endl;
-		//	cout << "boardPoint: " << boardPoints[1] << endl;
-		//	cout << "rotationMatrix: " << rotationMatrix << endl;
-		cout << "result: ";
-
-		cv::Mat boardPoint = (cv::Mat_<double>(3,1) << 0.0f,0.04f,0.0f);
-
-		//cv::Mat resultingPoint =rotationMatrix*boardPoint + tvec;
-
-
-
-
-		//boardPoints.at<cv::Point3f>(1);
-
-
-		//cv::Mat resultingPoint(rotationMatrix*boardPoints[1]+ tvec);
-
-		//cout << resultingPoint<< endl;
-
-
 	}
 
 }
@@ -134,7 +108,7 @@ int main (int argc, char** argv)
 	ros::init (argc, argv, "calibration");
 	ros::NodeHandle nh;
 	ros::Subscriber sub = nh.subscribe("/camera/rgb/image_mono", 1, calibrate);
-	pub = nh.advertise<std_msgs::Float64MultiArray>("calibration_data",1);
+	pub = nh.advertise<std_msgs::Float64MultiArray>("calibration_data",1);ro
 	ros::spin ();
 }
 
