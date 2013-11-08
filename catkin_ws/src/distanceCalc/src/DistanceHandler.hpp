@@ -14,6 +14,12 @@
 #include <vector>
 #include <std_msgs/Float64MultiArray.h>
 
+
+struct ObjectsAndRobot{
+	clustering::clusterArray objects;
+	clustering::clusterArray robot;
+};
+
 //template <>
 class DistanceHandler{
 private:
@@ -22,13 +28,17 @@ private:
 	ros::Subscriber calibrationSubscriber, robotSubscriber, clusteringSubscriber;
 	ros::Publisher distancePublisher;
 	clustering::clusterArray rawClusters;
-	clustering::clusterArray filteredClusters;
+	clustering::clusterArray objectClusters;
+	clustering::clusterArray robotClusters;
+	float insideRobotParameter;
 
 	//variables from distanceCalculator
 	float minDistance;
 	pcl::PointXYZ point;
 	pcl::PointXYZ p;
 	std::vector<pcl::PointXYZ> robotJoint;
+	std::vector<float> sqrLengthBetweenJoints;
+	std::vector<float> radiusOfCylinders;
 	pcl::PointXYZ minPoint;
 	pcl::PointXYZ closestJoint;
 	//float distance;
@@ -41,6 +51,13 @@ public:
 		//TODO add robotSubsriber
 		clusteringSubscriber = nh.subscribe("cluster_vectors", 1,  &DistanceHandler::distanceCallback, this);
 		distancePublisher = nh.advertise<std_msgs::Float32MultiArray>("distances", 1);
+		//only for testing
+		robotJoint.push_back(pcl::PointXYZ(0.0f,-0.5f,1.5f));
+		robotJoint.push_back(pcl::PointXYZ(0.0f,0.5f,1.5f));
+		sqrLengthBetweenJoints.push_back(0.1f);
+		radiusOfCylinders.push_back(3.0f);
+		insideRobotParameter = 0.01;
+
 
 	}
 	void calibrationCallback(const std_msgs::Float64MultiArray& msg){
@@ -53,10 +70,15 @@ public:
 		cv::Rodrigues(rvec,rotationMatrix);
 
 	}
+
+	///Functions regarding calculation of distances
 	void distanceCallback(clustering::clusterArray msg){
+		std::cout << "received clusters" << std::endl;
 		rawClusters = msg;
-		filteredClusters = removeRobot(msg); //TODO not implemented
-		distanceCalc(filteredClusters);
+		ObjectsAndRobot result = removeRobot(msg); //TODO not implemented
+		objectClusters = result.objects;
+		robotClusters = result.robot;
+		distanceCalc(objectClusters);
 
 	}
 
@@ -85,8 +107,8 @@ public:
 		returnArray.layout.dim[0].stride = 7*numberOfClusters;
 		returnArray.layout.dim[1].size = numberOfClusters;
 		returnArray.layout.dim[1].stride = 7;
-//		cout << "Size of clusterArray (outer) " << endl;
-//		cout << clusters.ca.size() << endl;
+		//		cout << "Size of clusterArray (outer) " << endl;
+		//		cout << clusters.ca.size() << endl;
 
 		for(int j = 0; j<clusters.ca.size();j++){
 			minDistance = 10000.0f;
@@ -101,19 +123,104 @@ public:
 			returnArray.data[5+j*7] = closestJoint.z;
 			returnArray.data[6+j*7] = minDistance;
 			//ROS_INFO("%f",minDistance);
-//			cout << "Printing mindistance:" << endl;
-//			cout << "MINDISTANCE" << endl;
-//			cout << returnArray.data[6+j*7] << endl;
-//			cout << ("%f",minDistance)	<< endl;
+			//			cout << "Printing mindistance:" << endl;
+			//			cout << "MINDISTANCE" << endl;
+			//			cout << returnArray.data[6+j*7] << endl;
+			//			cout << ("%f",minDistance)	<< endl;
 		}
 		//cout << "Publishibng returnArray..." << endl;
 		distancePublisher.publish(returnArray);
 	}
 
-	clustering::clusterArray_ removeRobot(clustering::clusterArray rawClusterCloud){
+	//Functions regarding removal of the robot!
+	ObjectsAndRobot removeRobot(clustering::clusterArray& rawClusterCloud){
+		clustering::clusterArray objectArray;
+		clustering::clusterArray robotArray;
+
+		int numberOfClusters=0;
+		int removedClusters = 0;
+		for(int i=0; i<rawClusterCloud.ca.size(); i++)
+		{
+			++numberOfClusters;
+			float inside = 0;
+			float outside = 0;
+			for(int j=0; j<rawClusterCloud.ca[i].pa.size(); j++)
+			{
+				if(pointInsideRobot(rawClusterCloud.ca[i].pa[j]))
+					++inside;
+				else
+					++outside;
+			}
+
+			if((inside+outside != 0)&&!(inside/(inside+outside) > insideRobotParameter) ){
+				objectArray.ca.push_back(rawClusterCloud.ca[i]); // add cluster if not inside robot
+
+			} else{
+				robotArray.ca.push_back(rawClusterCloud.ca[i]);// add cluster if inside robot
+				++removedClusters;
+			}
+			std::cout << "inside: "<< inside <<std::endl;
+			std::cout << "outside: "<< outside <<std::endl;
+
+		}
+
+		std::cout << "numberofclusters: " << numberOfClusters <<std::endl;
+		std::cout << "removedClusters: " << removedClusters <<std::endl;
+
+		return ObjectsAndRobot{objectArray, robotArray};
 
 	}
 
+	bool pointInsideRobot(clustering::point p){
+		for(int i=0; i<robotJoint.size()-1; i++){
+			if (pointInsideCylinder(robotJoint[i],robotJoint[i+1],sqrLengthBetweenJoints[i],radiusOfCylinders[i],p))
+				return true;
+		}
+		return false;
+	}
+
+	//Algorithm copied from http://www.flipcode.com/archives/Fast_Point-In-Cylinder_Test.shtml
+	bool pointInsideCylinder( const pcl::PointXYZ& pt1, const pcl::PointXYZ& pt2, float lengthsq, float radius_sq, const clustering::point& testpt )
+	{
+		float dx, dy, dz;	// vector d  from line segment point 1 to point 2
+		float pdx, pdy, pdz;	// vector pd from point 1 to test point
+		float dot, dsq;
+
+		dx = pt2.x - pt1.x;	// translate so pt1 is origin.  Make vector from
+		dy = pt2.y - pt1.y;     // pt1 to pt2.  Need for this is easily eliminated
+		dz = pt2.z - pt1.z;
+
+		pdx = testpt.x - pt1.x;		// vector from pt1 to test point.
+		pdy = testpt.y - pt1.y;
+		pdz = testpt.z - pt1.z;
+
+
+		dot = pdx * dx + pdy * dy + pdz * dz;
+
+
+		if( dot < 0.0f || dot > lengthsq )
+		{
+			//std::cout << "beside" << std::endl;
+			return(false);
+		}
+		else
+		{
+
+			dsq = (pdx*pdx + pdy*pdy + pdz*pdz) - dot*dot/lengthsq;
+
+			if( dsq > radius_sq )
+			{
+				//std::cout << "outside" << std::endl;
+				return(false);
+			}
+			else
+			{
+				//std::cout << "inside" << std::endl;
+				return(true);		// return true if inside cylinder
+			}
+		}
+	}
 };
+
 
 #endif
