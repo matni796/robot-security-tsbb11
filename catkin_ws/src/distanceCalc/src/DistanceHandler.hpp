@@ -36,7 +36,7 @@ private:
 	float minDistance;
 	pcl::PointXYZ point;
 	pcl::PointXYZ p;
-	std::vector<pcl::PointXYZ> robotJoint;
+	std::vector<cv::Mat> robotJoint;
 	std::vector<float> sqrLengthBetweenJoints;
 	std::vector<float> radiusOfCylinders;
 	pcl::PointXYZ minPoint;
@@ -52,13 +52,11 @@ public:
 		clusteringSubscriber = nh.subscribe("cluster_vectors", 1,  &DistanceHandler::distanceCallback, this);
 		distancePublisher = nh.advertise<std_msgs::Float32MultiArray>("distances", 1);
 		//only for testing
-		robotJoint.push_back(pcl::PointXYZ(0.0f,-0.5f,1.5f));
-		robotJoint.push_back(pcl::PointXYZ(0.0f,0.5f,1.5f));
+		robotJoint.push_back(cv::Mat_<float>(3,1) <<0.0f,-0.5f,1.5f);
+		robotJoint.push_back(cv::Mat_<float>(3,1) <<0.0f,0.5f,1.5f);
 		sqrLengthBetweenJoints.push_back(0.1f);
 		radiusOfCylinders.push_back(3.0f);
 		insideRobotParameter = 0.01;
-
-
 	}
 	void calibrationCallback(const std_msgs::Float64MultiArray& msg){
 		cv::Mat rvec(3,1,cv::DataType<float>::type);
@@ -68,7 +66,6 @@ public:
 			rvec.at<float>(i,0) = msg.data[i+3];
 		}
 		cv::Rodrigues(rvec,rotationMatrix);
-
 	}
 
 	///Functions regarding calculation of distances
@@ -86,14 +83,14 @@ public:
 
 
 		for(int i = 0; i < robotJoint.size(); i++){
-			float distance = powf(robotJoint[i].x-x, 2)+powf(robotJoint[i].y-y, 2)+powf(robotJoint[i].z-z, 2);
+			float distance = powf(robotJoint[i].at<float>(0,0)-x, 2)+powf(robotJoint[i].at<float>(1,0)-y, 2)+powf(robotJoint[i].at<float>(2,0)-z, 2);
 			if (distance <= minDistance)
 			{
 				minDistance = distance;
 				minPoint.x = x;
 				minPoint.y = y;
 				minPoint.z = z;
-				closestJoint = robotJoint[i];
+				closestJoint = robotJoint[i]; //should produce errors
 			}
 		}
 	}
@@ -173,6 +170,13 @@ public:
 
 	bool pointInsideRobot(clustering::point p){
 		for(int i=0; i<robotJoint.size()-1; i++){
+			if (rotationMatrix){
+				cv::Mat joint1KinectCoord = rotationMatrix*robotJoint[i]+tvec;
+				cv::Mat joint2KinectCoord = rotationMatrix*robotJoint[i+1]+tvec;
+
+				if (pointInsideCylinder(joint1KinectCoord,joint2KinectCoord,sqrLengthBetweenJoints[i],radiusOfCylinders[i],p))
+							return true;
+			} // rotationMatrix*robotJoint[i] +tvec,rotationMatrix*robotJoint[i+1] +tvec,sqrLengthBetweenJoints[i],radiusOfCylinders[i],p
 			if (pointInsideCylinder(robotJoint[i],robotJoint[i+1],sqrLengthBetweenJoints[i],radiusOfCylinders[i],p))
 				return true;
 		}
@@ -180,7 +184,7 @@ public:
 	}
 
 	//Algorithm copied from http://www.flipcode.com/archives/Fast_Point-In-Cylinder_Test.shtml
-	bool pointInsideCylinder( const pcl::PointXYZ& pt1, const pcl::PointXYZ& pt2, float lengthsq, float radius_sq, const clustering::point& testpt )
+	bool pointInsideCylinder( cv::Mat& pt1, cv::Mat& pt2, float lengthsq, float radius_sq, const clustering::point& testpt )
 	{
 		float dx, dy, dz;	// vector d  from line segment point 1 to point 2
 		float pdx, pdy, pdz;	// vector pd from point 1 to test point
