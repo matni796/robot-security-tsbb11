@@ -13,6 +13,7 @@
 #include <image_transport/image_transport.h>
 #include <vector>
 #include <std_msgs/Float64MultiArray.h>
+#include <visualization_msgs/Marker.h>
 
 
 struct ObjectsAndRobot{
@@ -26,11 +27,12 @@ private:
 	cv::Mat rotationMatrix;
 	cv::Mat tvec;
 	ros::Subscriber calibrationSubscriber, robotSubscriber, clusteringSubscriber;
-	ros::Publisher distancePublisher;
+	ros::Publisher distancePublisher, cylinderPublisher;
 	clustering::clusterArray rawClusters;
 	clustering::clusterArray objectClusters;
 	clustering::clusterArray robotClusters;
 	float insideRobotParameter;
+	visualization_msgs::Marker cylinder;
 
 	//variables from distanceCalculator
 	float minDistance;
@@ -51,6 +53,7 @@ public:
 		//TODO add robotSubsriber
 		clusteringSubscriber = nh.subscribe("cluster_vectors", 1,  &DistanceHandler::distanceCallback, this);
 		distancePublisher = nh.advertise<std_msgs::Float32MultiArray>("distances", 1);
+		cylinderPublisehr = nh.advertise<visualization_msgs::Marker>("robot_cylinder", 0);
 		//only for testing
 		cv::Mat test;
 		test = (cv::Mat_<float>(3,1) <<1.00f,0.0f,0.0f);
@@ -60,6 +63,8 @@ public:
 		sqrLengthBetweenJoints.push_back(1.0f);
 		radiusOfCylinders.push_back(0.01f);
 		insideRobotParameter = 0.4;
+
+		cylinder.header.frame
 	}
 	void calibrationCallback(const std_msgs::Float64MultiArray& msg){
 		cv::Mat rvec(3,1,cv::DataType<float>::type);
@@ -79,6 +84,7 @@ public:
 		objectClusters = result.objects;
 		robotClusters = result.robot;
 		distanceCalc(objectClusters);
+
 
 	}
 

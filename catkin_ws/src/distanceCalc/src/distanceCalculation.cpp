@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-
+#define HYDRO
 // PCL specific includes
 #include <memory>
 #include <iostream>
@@ -13,11 +13,19 @@
 #include <std_msgs/String.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/PointCloud.h>
+#ifndef HYDRO
 #include <pcl-1.6/pcl/ros/conversions.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl-1.6/pcl/point_cloud.h>
 #include <pcl-1.6/pcl/point_types.h>
 #include <pcl-1.6/pcl/common/norms.h>
+#else
+#include <pcl/conversions.h>
+#include <pcl_ros/point_cloud.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/common/norms.h>
+#endif
 #include <math.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <clustering/point.h>
@@ -97,4 +105,5 @@ int main (int argc, char** argv)
 	//sub = nh.subscribe ("cluster_vectors", 1, distanceCalc);
 	//chatter_pub = nh.advertise<std_msgs::Float32MultiArray>("diances", 1);
 	ros::spin ();
+
 }
