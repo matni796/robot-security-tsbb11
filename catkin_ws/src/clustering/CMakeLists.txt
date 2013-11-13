@@ -6,8 +6,10 @@ project(clustering)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
-  pcl
+  # pcl
   pcl_ros
+  pcl_msgs
+  pcl_conversions
   roscpp
   sensor_msgs
   std_msgs

@@ -1,10 +1,21 @@
+#define HYDRO
+
 #include <ros/ros.h>
 // PCL specific includes
+//#include <pcl-1.6/pcl/point_cloud.h>
+#ifdef HYDRO
+#include <pcl_ros/point_cloud.h>
+#include <pcl/conversions.h>
+#include <pcl/point_types.h>
+#include <pcl/visualization/cloud_viewer.h>
+#else
 #include <pcl-1.6/pcl/point_cloud.h>
 #include <pcl-1.6/pcl/ros/conversions.h>
 #include <pcl-1.6/pcl/point_types.h>
 #include <pcl-1.6/pcl/visualization/cloud_viewer.h>
 #include <pcl_ros/point_cloud.h>
+#endif
+
 #include <iostream>
 #include <sensor_msgs/image_encodings.h>
 #include <cv_bridge/cv_bridge.h>

@@ -1,3 +1,5 @@
+#define HYDRO
+
 #include <ros/ros.h>
 // PCL specific includes
 #include <memory>
@@ -15,6 +17,7 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/PointCloud.h>
 // PCL specific includes
+#ifndef HYDRO
 #include <pcl-1.6/pcl/ros/conversions.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl-1.6/pcl/point_cloud.h>
@@ -25,6 +28,19 @@
 #include <pcl-1.6/pcl/kdtree/kdtree.h>
 #include <pcl-1.6/pcl/filters/filter.h>
 #include <pcl-1.6/pcl/filters/voxel_grid.h>
+#else
+#include <pcl/conversions.h>
+#include <pcl_ros/point_cloud.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/segmentation/extract_clusters.h>
+#include <pcl/kdtree/kdtree.h>
+#include <pcl/filters/filter.h>
+#include <pcl/filters/voxel_grid.h>
+#endif
+
 using namespace std;
 
 namespace enc = sensor_msgs::image_encodings;

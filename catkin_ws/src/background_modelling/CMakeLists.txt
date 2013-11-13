@@ -11,8 +11,10 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   stereo_msgs
   camera_calibration_parsers
-  pcl
+  #pcl
   pcl_ros
+  pcl_msgs
+  pcl_conversions
 )
 find_package(OpenCV REQUIRED)
 
