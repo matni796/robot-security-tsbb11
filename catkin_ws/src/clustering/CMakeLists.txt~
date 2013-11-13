@@ -6,15 +6,12 @@ project(clustering)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
-  # pcl
+  pcl
   pcl_ros
-  pcl_msgs
-  pcl_conversions
   roscpp
   sensor_msgs
   std_msgs
   stereo_msgs
-message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -41,9 +38,9 @@ add_message_files(FILES point.msg pointArray.msg clusterArray.msg)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
+ generate_messages(
    DEPENDENCIES
-   std_msgs
+   sensor_msgs   std_msgs   stereo_msgs
  )
 
 ###################################

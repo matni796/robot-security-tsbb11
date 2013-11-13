@@ -22,6 +22,8 @@
 #include "camera_calibration_parsers/parse_yml.h"
 //#include "floattypes.h";
 
+#include <unistd.h>
+
 using namespace std;
 
 ros::Publisher pub;
@@ -36,15 +38,15 @@ sensor_msgs::CameraInfo camInfo;
 std_msgs::Float64MultiArray calibrationData;
 
 std::string getEnvVar( std::string const & key ) {
-  char * val;
-  val = getenv( key.c_str() );
-  std::string retval = "";
-  if (val != NULL) {
-    retval = val;
-  } else {
-	  cerr << "Warning! Environmentvariable " << key << " is not set!";
-  }
-  return retval;
+	char * val;
+	val = getenv( key.c_str() );
+	std::string retval = "";
+	if (val != NULL) {
+		retval = val;
+	} else {
+		cerr << "Warning! Environmentvariable " << key << " is not set!";
+	}
+	return retval;
 }
 
 void calibrate(const sensor_msgs::ImageConstPtr& msg)
@@ -77,36 +79,12 @@ void calibrate(const sensor_msgs::ImageConstPtr& msg)
 		calibrationData.data.resize(6);
 
 		for (int i=0;i<3;i++){
-			calibrationData.data[i+3] = tvec.at<double>(i,0);
 			calibrationData.data[i] = rvec.at<double>(i,0);
+			calibrationData.data[i+3] = tvec.at<double>(i,0);
 		}
-
+		usleep(long(2000000));
+		std::cout << "Calibration data: " << calibrationData << std::endl;
 		pub.publish(calibrationData);
-
-		cv::Mat rotationMatrix(3,3,cv::DataType<double>::type);
-
-		cv::Rodrigues(rvec,rotationMatrix);
-
-		//	cout << "tvec: " << tvec << endl;
-		//	cout << "boardPoint: " << boardPoints[1] << endl;
-		//	cout << "rotationMatrix: " << rotationMatrix << endl;
-		cout << "result: ";
-
-		cv::Mat boardPoint = (cv::Mat_<double>(3,1) << 0.0f,0.04f,0.0f);
-
-		//cv::Mat resultingPoint =rotationMatrix*boardPoint + tvec;
-
-
-
-
-		//boardPoints.at<cv::Point3f>(1);
-
-
-		//cv::Mat resultingPoint(rotationMatrix*boardPoints[1]+ tvec);
-
-		//cout << resultingPoint<< endl;
-
-
 	}
 
 }
@@ -125,8 +103,8 @@ int main (int argc, char** argv)
 	distortion = (cv::Mat_<double>(1,5) << camInfo.D[0], camInfo.D[1],
 			camInfo.D[2], camInfo.D[3], camInfo.D[4]);
 
-	for(int x= 0; x<6; ++ x){
-		for(int y= 0; y<8; ++y){
+	for(int y= 0; y<6; ++y){
+		for(int x= 0; x<8; ++ x){
 			boardPoints.push_back(cv::Point3f(0.04*x,0.04*y,0.0));
 		}
 	}
@@ -134,7 +112,7 @@ int main (int argc, char** argv)
 	ros::init (argc, argv, "calibration");
 	ros::NodeHandle nh;
 	ros::Subscriber sub = nh.subscribe("/camera/rgb/image_mono", 1, calibrate);
-	pub = nh.advertise<std_msgs::Float64MultiArray>("calibrationdata",1);
+	pub = nh.advertise<std_msgs::Float64MultiArray>("calibration_data",1);
 	ros::spin ();
 }
 
