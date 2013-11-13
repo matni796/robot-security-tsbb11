@@ -123,7 +123,9 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 
 	// Publish point cloud
 	pcl::PointCloud<pcl::PointXYZ>::Ptr myCloud(new pcl::PointCloud<pcl::PointXYZ>());
-	myCloud->insert(myCloud->begin(), cloud.begin(), cloud.end());
+	
+    myCloud->header.frame_id = "/camera_depth_frame";
+    myCloud->insert(myCloud->begin(), cloud.begin(), cloud.end());
 	pub.publish(myCloud);
 	//viewer.showCloud(myCloud);
 	myCloud->clear();
