@@ -64,7 +64,12 @@ public:
 		radiusOfCylinders.push_back(0.01f);
 		insideRobotParameter = 0.4;
 
-		cylinder.header.frame
+		cylinder.header.frame_id = "/camera_depth_frame";
+		cylinder.header.stamp=ros::Time();
+		cylinder.id = 0;
+		cylinder.type = visualization_msgs::Marker::CYLINDER;
+		cylinder.action = visualization_msgs::Marker::ADD;
+
 	}
 	void calibrationCallback(const std_msgs::Float64MultiArray& msg){
 		cv::Mat rvec(3,1,cv::DataType<float>::type);
