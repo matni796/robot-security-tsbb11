@@ -49,7 +49,7 @@ void compareToRobot(float x, float y, float z){
 		{
 			minDistance = distance;
 			minPoint.x = x;
-			minPoint.y = y;
+			minPoint.y = y;st =(cv::Mat_<float>(3,1) <<0.0f,0.5f,1.5f);
 			minPoint.z = z;
 			closestJoint = robotJoint[i];
 		}

@@ -36,7 +36,7 @@ private:
 	float minDistance;
 	pcl::PointXYZ point;
 	pcl::PointXYZ p;
-	std::vector<cv::Mat> robotJoint;
+	std::vector<cv::Mat_ <float> > robotJoint;
 	std::vector<float> sqrLengthBetweenJoints;
 	std::vector<float> radiusOfCylinders;
 	pcl::PointXYZ minPoint;
@@ -46,24 +46,27 @@ private:
 	int numberOfClusters;
 
 public:
-	DistanceHandler(ros::NodeHandle& nh) : tvec(3,1,cv::DataType<float>::type), robotJoint(2) {
+	DistanceHandler(ros::NodeHandle& nh) : tvec(3,1,cv::DataType<float>::type) {
 		calibrationSubscriber = nh.subscribe("calibration_data", 1, &DistanceHandler::calibrationCallback, this);
 		//TODO add robotSubsriber
 		clusteringSubscriber = nh.subscribe("cluster_vectors", 1,  &DistanceHandler::distanceCallback, this);
 		distancePublisher = nh.advertise<std_msgs::Float32MultiArray>("distances", 1);
 		//only for testing
-		robotJoint.push_back(cv::Mat_<float>(3,1) <<0.0f,-0.5f,1.5f);
-		robotJoint.push_back(cv::Mat_<float>(3,1) <<0.0f,0.5f,1.5f);
-		sqrLengthBetweenJoints.push_back(0.1f);
-		radiusOfCylinders.push_back(3.0f);
-		insideRobotParameter = 0.01;
+		cv::Mat test;
+		test = (cv::Mat_<float>(3,1) <<1.00f,0.0f,0.0f);
+		robotJoint.push_back(test);
+		test =(cv::Mat_<float>(3,1) <<1.00f,0.0f,2.0f);
+		robotJoint.push_back(test);
+		sqrLengthBetweenJoints.push_back(1.0f);
+		radiusOfCylinders.push_back(0.01f);
+		insideRobotParameter = 0.4;
 	}
 	void calibrationCallback(const std_msgs::Float64MultiArray& msg){
 		cv::Mat rvec(3,1,cv::DataType<float>::type);
-		std::cout << msg << std::endl;
+		std::cout << "Calibrating" << std::endl;
 		for (int i = 0; i <3; ++i){
-			tvec.at<float>(i,0) = msg.data[i];
-			rvec.at<float>(i,0) = msg.data[i+3];
+			rvec.at<float>(i,0) = msg.data[i];
+			tvec.at<float>(i,0) = msg.data[i+3];
 		}
 		cv::Rodrigues(rvec,rotationMatrix);
 	}
@@ -83,14 +86,17 @@ public:
 
 
 		for(int i = 0; i < robotJoint.size(); i++){
-			float distance = powf(robotJoint[i].at<float>(0,0)-x, 2)+powf(robotJoint[i].at<float>(1,0)-y, 2)+powf(robotJoint[i].at<float>(2,0)-z, 2);
+			cv::Mat jointInKinectCoord = rotationMatrix*robotJoint[i]+tvec;
+			float distance = powf(jointInKinectCoord.at<float>(0,0)-x, 2)+powf(jointInKinectCoord.at<float>(1,0)-y, 2)+powf(jointInKinectCoord.at<float>(2,0)-z, 2);
 			if (distance <= minDistance)
 			{
 				minDistance = distance;
 				minPoint.x = x;
 				minPoint.y = y;
 				minPoint.z = z;
-				closestJoint = robotJoint[i]; //should produce errors
+				closestJoint.x = robotJoint[i].at<float>(0,0);
+				closestJoint.y = robotJoint[i].at<float>(1,0);
+				closestJoint.z=robotJoint[i].at<float>(2,0);//should produce errors
 			}
 		}
 	}
@@ -119,6 +125,11 @@ public:
 			returnArray.data[4+j*7] = closestJoint.y;
 			returnArray.data[5+j*7] = closestJoint.z;
 			returnArray.data[6+j*7] = minDistance;
+
+			std::cout << "Object information for object " << j << std::endl;
+			std::cout << "closest joint is " << closestJoint.x << " " << closestJoint.y << " " << closestJoint.z << std::endl;
+			std::cout << "Distance to robot is " << minDistance << std::endl;
+
 			//ROS_INFO("%f",minDistance);
 			//			cout << "Printing mindistance:" << endl;
 			//			cout << "MINDISTANCE" << endl;
@@ -148,6 +159,10 @@ public:
 				else
 					++outside;
 			}
+			std::cout << "***** rMatrixInfoSTART *****" << std::endl;
+			std::cout << "Joint0: "<< rotationMatrix*robotJoint[0]+tvec << std::endl;
+			std::cout << "Joint1: "<< rotationMatrix*robotJoint[1]+tvec << std::endl;
+			std::cout << "***** rMatrixInfoEND *****" << std::endl;
 
 			if((inside+outside != 0)&&!(inside/(inside+outside) > insideRobotParameter) ){
 				objectArray.ca.push_back(rawClusterCloud.ca[i]); // add cluster if not inside robot
@@ -156,8 +171,10 @@ public:
 				robotArray.ca.push_back(rawClusterCloud.ca[i]);// add cluster if inside robot
 				++removedClusters;
 			}
+
 			std::cout << "inside: "<< inside <<std::endl;
 			std::cout << "outside: "<< outside <<std::endl;
+
 
 		}
 
@@ -170,15 +187,17 @@ public:
 
 	bool pointInsideRobot(clustering::point p){
 		for(int i=0; i<robotJoint.size()-1; i++){
-			if (rotationMatrix){
-				cv::Mat joint1KinectCoord = rotationMatrix*robotJoint[i]+tvec;
-				cv::Mat joint2KinectCoord = rotationMatrix*robotJoint[i+1]+tvec;
+			if (!rotationMatrix.empty()){
+				cv::Mat joint1KinectCoord = rotationMatrix*robotJoint[i] + tvec;
+				cv::Mat joint2KinectCoord = rotationMatrix*robotJoint[i+1] + tvec;
 
 				if (pointInsideCylinder(joint1KinectCoord,joint2KinectCoord,sqrLengthBetweenJoints[i],radiusOfCylinders[i],p))
 							return true;
 			} // rotationMatrix*robotJoint[i] +tvec,rotationMatrix*robotJoint[i+1] +tvec,sqrLengthBetweenJoints[i],radiusOfCylinders[i],p
-			if (pointInsideCylinder(robotJoint[i],robotJoint[i+1],sqrLengthBetweenJoints[i],radiusOfCylinders[i],p))
+			else if (pointInsideCylinder(robotJoint[i],robotJoint[i+1],sqrLengthBetweenJoints[i],radiusOfCylinders[i],p)){
+				std::cout << "Warning!, Calibration is not working" << std::endl;
 				return true;
+			}
 		}
 		return false;
 	}
@@ -190,13 +209,13 @@ public:
 		float pdx, pdy, pdz;	// vector pd from point 1 to test point
 		float dot, dsq;
 
-		dx = pt2.x - pt1.x;	// translate so pt1 is origin.  Make vector from
-		dy = pt2.y - pt1.y;     // pt1 to pt2.  Need for this is easily eliminated
-		dz = pt2.z - pt1.z;
+		dx = pt2.at<float>(0,0) - pt1.at<float>(0,0);	// translate so pt1 is origin.  Make vector from
+		dy = pt2.at<float>(1,0) - pt1.at<float>(1,0);     // pt1 to pt2.  Need for this is easily eliminated
+		dz = pt2.at<float>(2,0) - pt1.at<float>(2,0);
 
-		pdx = testpt.x - pt1.x;		// vector from pt1 to test point.
-		pdy = testpt.y - pt1.y;
-		pdz = testpt.z - pt1.z;
+		pdx = testpt.x - pt1.at<float>(0,0);		// vector from pt1 to test point.
+		pdy = testpt.y - pt1.at<float>(1,0);
+		pdz = testpt.z - pt1.at<float>(2,0);
 
 
 		dot = pdx * dx + pdy * dy + pdz * dz;
