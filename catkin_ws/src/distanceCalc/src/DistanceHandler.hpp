@@ -85,13 +85,19 @@ public:
 	void distanceCallback(clustering::clusterArray msg){
 		std::cout << "received clusters" << std::endl;
 		rawClusters = msg;
-		ObjectsAndRobot result = removeRobot(msg); //TODO not implemented
+		ObjectsAndRobot result = removeRobot(msg); 
 		objectClusters = result.objects;
 		robotClusters = result.robot;
 		distanceCalc(objectClusters);
+        publishRobot();
 
 
 	}
+
+    void publishRobot(){
+        
+        marker.pose.position.x=robotJoint[0]
+    }
 
 	void compareToRobot(float x, float y, float z){
 
