@@ -43,6 +43,8 @@ std::vector<cv::Mat> channels;
 // Elements from projection matrix needed for PC construction
 float fx, fy, cx, cy;
 const float normFact = 255.0f/6.0f;			// Normalization factor
+pcl::PointCloud<pcl::PointXYZ>::Ptr publishedCloud;
+
 //pcl::visualization::CloudViewer viewer("Cloud viewer");
 std::vector<pcl::PointXYZ> cloud;				// Point cloud
 namespace enc = sensor_msgs::image_encodings;
@@ -119,16 +121,15 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 			}
 		}
 	}
-	cloud.push_back(pcl::PointXYZ(0.0f,0.0f,0.0f));
+	//cloud.push_back(pcl::PointXYZ(0.0f,0.0f,0.0f));
 
 	// Publish point cloud
-	pcl::PointCloud<pcl::PointXYZ>::Ptr myCloud(new pcl::PointCloud<pcl::PointXYZ>());
-	
-    myCloud->header.frame_id = "/camera_depth_frame";
-    myCloud->insert(myCloud->begin(), cloud.begin(), cloud.end());
-	pub.publish(myCloud);
+		
+    publishedCloud->header.frame_id = "/camera_depth_frame";
+    publishedCloud->insert(publishedCloud->begin(), cloud.begin(), cloud.end());
+	pub.publish(publishedCloud);
 	//viewer.showCloud(myCloud);
-	myCloud->clear();
+	publishedCloud->clear();
 
 }
 
@@ -139,6 +140,8 @@ int main (int argc, char** argv)
 	string cameraName;
 	sensor_msgs::CameraInfo camInfo;
 	camera_calibration_parsers::readCalibration(path, cameraName, camInfo);
+    
+    publishedCloud=pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>());
 
 
 	fx = camInfo.P.elems[0];
