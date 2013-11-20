@@ -16,7 +16,7 @@
 #include <image_transport/image_transport.h>
 #include <vector>
 #include <std_msgs/Float64MultiArray.h>
-
+#include <tf/transform_broadcaster.h>
 #include "camera_calibration_parsers/parse.h"
 #include "camera_calibration_parsers/parse_ini.h"
 #include "camera_calibration_parsers/parse_yml.h"
@@ -26,7 +26,6 @@
 
 using namespace std;
 
-ros::Publisher pub;
 string fileName;
 cv_bridge::CvImagePtr cv_ptr;
 cv::Mat intrinsics, distortion;
@@ -38,81 +37,69 @@ sensor_msgs::CameraInfo camInfo;
 std_msgs::Float64MultiArray calibrationData;
 
 std::string getEnvVar( std::string const & key ) {
-	char * val;
-	val = getenv( key.c_str() );
-	std::string retval = "";
-	if (val != NULL) {
+    char * val;
+    val = getenv( key.c_str() );
+    std::string retval = "";
+    if (val != NULL) {
 		retval = val;
-	} else {
+    }
+    else {
 		cerr << "Warning! Environmentvariable " << key << " is not set!";
-	}
-	return retval;
+    }
+    return retval;
 }
+
+tf::TransformBroadcaster br;
 
 void calibrate(const sensor_msgs::ImageConstPtr& msg)
 {
-	try
-	{
+    try
+    {
 		cv_ptr = cv_bridge::toCvCopy(msg, "");
-	}
-	catch (cv_bridge::Exception& e)
-	{
+    }
+    catch (cv_bridge::Exception& e)
+    {
 		ROS_ERROR("cv_bridge exception: %s", e.what());
 		return;
-	}
+    }
 
 	bool found = findChessboardCorners(cv_ptr->image,patternsize,corners, CV_CALIB_CB_ADAPTIVE_THRESH);
 	cv::Mat rvec(3,1,cv::DataType<float>::type);
 	cv::Mat tvec(3,1,cv::DataType<float>::type);
 
-	if (corners.size() == 48){
+	if (corners.size() == 48) {
 		cv::solvePnP(boardPoints, corners, intrinsics, distortion, rvec, tvec, false);
-
-		calibrationData.layout.dim.resize(2);
-		calibrationData.layout.dim[0].label = "vectors";
-		calibrationData.layout.dim[0].size = 2;
-		calibrationData.layout.dim[0].stride = 2*3;
-		calibrationData.layout.dim[1].label = "elements";
-		calibrationData.layout.dim[1].size = 3;
-		calibrationData.layout.dim[1].stride = 3;
-
-		calibrationData.data.resize(6);
-
-		for (int i=0;i<3;i++){
-			calibrationData.data[i] = rvec.at<double>(i,0);
-			calibrationData.data[i+3] = tvec.at<double>(i,0);
-		}
-		usleep(long(2000000));
-		std::cout << "Calibration data: " << calibrationData << std::endl;
-		pub.publish(calibrationData);
-	}
-
+		tf::Transform transform;
+		auto at = [&] (cv::Mat & vec, int i) { return tvec.at<double>(i,0); };
+		transform.setOrigin(tf::Vector3(at(tvec, 0), at(tvec, 1), at(tvec, 2)));
+		transform.setRotation(tf::Vector3(at(rvec, 0), at(rvec, 1), at(rvec, 2)));
+		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "camera", "pattern")); 
+    }
 }
 
 
 int main (int argc, char** argv)
 {
-	camera_calibration_parsers::readCalibration( getEnvVar("CAMERA_MATRIX_PATH")+"/camMatRGB.yaml", cameraName, camInfo);
+    camera_calibration_parsers::readCalibration( getEnvVar("CAMERA_MATRIX_PATH")+"/camMatRGB.yaml", cameraName, camInfo);
 
-	float fx = camInfo.P.elems[0];
-	float cx = camInfo.P.elems[2];
-	float fy = camInfo.P.elems[5];
-	float cy = camInfo.P.elems[6];
+    float fx = camInfo.P.elems[0];
+    float cx = camInfo.P.elems[2];
+    float fy = camInfo.P.elems[5];
+    float cy = camInfo.P.elems[6];
 
-	intrinsics = (cv::Mat_<double>(3,3) << fx, 0 ,cx , 0, fy, cy, 0, 0, 1);
-	distortion = (cv::Mat_<double>(1,5) << camInfo.D[0], camInfo.D[1],
-			camInfo.D[2], camInfo.D[3], camInfo.D[4]);
+    intrinsics = (cv::Mat_<double>(3,3) << fx, 0 ,cx , 0, fy, cy, 0, 0, 1);
+    distortion = (cv::Mat_<double>(1,5) << camInfo.D[0], camInfo.D[1],
+				  camInfo.D[2], camInfo.D[3], camInfo.D[4]);
 
-	for(int y= 0; y<6; ++y){
+    for(int y= 0; y<6; ++y){
 		for(int x= 0; x<8; ++ x){
 			boardPoints.push_back(cv::Point3f(0.04*x,0.04*y,0.0));
 		}
-	}
+    }
 
-	ros::init (argc, argv, "calibration");
-	ros::NodeHandle nh;
-	ros::Subscriber sub = nh.subscribe("/camera/rgb/image_mono", 1, calibrate);
-	pub = nh.advertise<std_msgs::Float64MultiArray>("calibration_data",1);
-	ros::spin ();
+    ros::init (argc, argv, "calibration");
+    ros::NodeHandle nh;
+    ros::Subscriber sub = nh.subscribe("/camera/rgb/image_mono", 1, calibrate);
+    ros::spin ();
 }
 
