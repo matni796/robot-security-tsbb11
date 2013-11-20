@@ -31,13 +31,6 @@ struct ObjectDataList{
 	clustering::clusterArray clouds;
 };
 
-
-/*struct ObjectsAndRobot{
-	clustering::clusterArray objects;
-	clustering::clusterArray robot;
-};*/
-
-//template <>
 class DistanceHandler{
 private:
 	ros::Subscriber calibrationSubscriber, robotSubscriber, clusteringSubscriber;
@@ -47,15 +40,10 @@ private:
 	visualization_msgs::Marker cylinder;
 	ObjectDataList objects;
 	ObjectDataList robot;
-	//variables from distanceCalculator
 	std::vector<cv::Mat_ <float> > robotJoint;
 	std::vector<float> sqrLengthBetweenJoints;
 	std::vector<float> radiusOfCylinders;
 	pcl::PointXYZ minPoint;
-	//pcl::PointXYZ closestJoint;
-	//int closestJoint;
-	//float distance;
-	//std_msgs::Float32MultiArray returnArray;
 	int numberOfClusters;
 	pcl::PointCloud<pcl::PointXYZ>::Ptr publishedPointCloud;
 
@@ -85,15 +73,6 @@ public:
 		cylinder.action = visualization_msgs::Marker::ADD;
 
 	}
-	/*void calibrationCallback(const std_msgs::Float64MultiArray& msg){
-		cv::Mat rvec(3,1,cv::DataType<float>::type);
-		std::cout << "Calibrating" << std::endl;
-		for (int i = 0; i <3; ++i){
-			rvec.at<float>(i,0) = msg.data[i];
-			tvec.at<float>(i,0) = msg.data[i+3];
-		}
-		cv::Rodrigues(rvec,rotationMatrix);
-	}*/
 
 	///Functions regarding calculation of distance
 	void distanceCallback(clustering::clusterArray msg){ //This function is what's doing all the work.
@@ -172,16 +151,7 @@ public:
 
 	void pointInsideRobot(clustering::point inputPoint, ObjectData& data){
 		for(int i=0; i<robotJoint.size()-1; i++){
-			//if (!rotationMatrix.empty()){
-				//cv::Mat joint1KinectCoord = rotationMatrix*robotJoint[i] + tvec;
-				//cv::Mat joint2KinectCoord = rotationMatrix*robotJoint[i+1] + tvec;
 				pointInsideCylinder(robotJoint[i],robotJoint[i+1],sqrLengthBetweenJoints[i],radiusOfCylinders[i],inputPoint,data, i);
-
-			//} else {
-				//pointInsideCylinder(robotJoint[i],robotJoint[i+1],sqrLengthBetweenJoints[i],radiusOfCylinders[i],inputPoint,data, i);
-				//std::cout << "Warning!, Calibration is not working" << std::endl;
-			//}
-
 		}
 	}
 
