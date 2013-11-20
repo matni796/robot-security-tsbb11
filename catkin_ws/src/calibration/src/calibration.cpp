@@ -49,10 +49,9 @@ std::string getEnvVar( std::string const & key ) {
     return retval;
 }
 
-tf::TransformBroadcaster br;
-
 void calibrate(const sensor_msgs::ImageConstPtr& msg)
 {
+	static tf::TransformBroadcaster br;
     try
     {
 		cv_ptr = cv_bridge::toCvCopy(msg, "");
@@ -70,10 +69,9 @@ void calibrate(const sensor_msgs::ImageConstPtr& msg)
 	if (corners.size() == 48) {
 		cv::solvePnP(boardPoints, corners, intrinsics, distortion, rvec, tvec, false);
 		tf::Transform transform;
-		auto at = [&] (cv::Mat & vec, int i) { return tvec.at<double>(i,0); };
-		transform.setOrigin(tf::Vector3(at(tvec, 0), at(tvec, 1), at(tvec, 2)));
-		transform.setRotation(tf::Vector3(at(rvec, 0), at(rvec, 1), at(rvec, 2)));
-		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "camera", "pattern")); 
+		transform.setOrigin(tf::Vector3(tvec.at<double>(0), tvec.at<double>(1), tvec.at<double>(2)));
+		transform.setRotation(tf::Quaternion(rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2)));
+		br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "camera_rgb_optical_frame", "pattern")); 
     }
 }
 
