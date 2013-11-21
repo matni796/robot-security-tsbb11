@@ -18,16 +18,16 @@
 
 
 struct ObjectData{
-	float minDistance =10000.0f;
+	float minDistance;
 	pcl::PointXYZ minPoint;
-	int closestJoint=-1;
+	int closestJoint;
 	int inside;
 	int outside;
 }; //index
 
 struct ObjectDataList{
 	std::vector<ObjectData> list;
-	int closestObject=-1; //index
+	int closestObject; //index
 	clustering::clusterArray clouds;
 };
 
@@ -55,7 +55,7 @@ public:
 		clusteringSubscriber = nh.subscribe("cluster_vectors", 1,  &DistanceHandler::distanceCallback, this);
 		linePublisher = nh.advertise<visualization_msgs::Marker>("closest_line", 0);
 		pointCloudPublisher = nh.advertise<sensor_msgs::PointCloud2>("objects",1);
-
+		objects.closestObject = -1;
 		//only for testing
 		cv::Mat test;
 		test = (cv::Mat_<float>(3,1) <<1.00f,0.0f,100.0f);
@@ -71,7 +71,7 @@ public:
 		line.header.frame_id = "/camera_depth_frame";
 		line.header.stamp=ros::Time();
 		line.id = 0;
-		line.type = visualization_msgs::Marker::ARROW;
+		line.type = visualization_msgs::Marker::LINE_STRIP;
 		line.action = visualization_msgs::Marker::ADD;
 
 	}
@@ -81,7 +81,7 @@ public:
 		rawClusters = msg;
 		removeRobot(msg);
 		setClosestObject();
-		//publishLine();
+		publishLine();
 		publishPointCloud(objects.clouds);
 		displayCurrentStatus();
 	}
@@ -112,21 +112,32 @@ public:
 			line.pose.orientation.x =diffX;
 			line.pose.orientation.y =diffY;
 			line.pose.orientation.z =diffZ;*/
+			geometry_msgs::Point p;
+			p.x=joint.at<float>(0,0);
+			p.y=joint.at<float>(1,0);
+			p.z= joint.at<float>(2,0);
+			line.points.push_back(p);
+			p.x=objectPoint.x;
+			p.y=objectPoint.y;
+			p.z=objectPoint.z;
+			line.points.push_back(p);
+			/*
 			line.points[0].x = joint.at<float>(0,0);
 			line.points[0].y = joint.at<float>(1,0);
 			line.points[0].z = joint.at<float>(2,0);
 			line.points[1].x = objectPoint.x;
 			line.points[1].y = objectPoint.y;
-			line.points[1].z = objectPoint.z;
+			line.points[1].z = objectPoint.z;*/
 			//cylinder.pose.orientation.w = 10.0f;
 			line.scale.x=0.1;
-			line.scale.y=0.1;
-			line.scale.z=0.1;
+			//line.scale.y=1.0;
+			//line.scale.z=1.0;
 			line.color.a=1.0;
 			line.color.g=1.0;
 			line.color.b=0.0;
 			line.color.r=0.0;
 			linePublisher.publish(line);
+			line.points.clear();
 		}
 	}
 
@@ -145,6 +156,8 @@ public:
 		for(int i=0; i<rawClusterCloud.ca.size(); i++)
 		{
 			ObjectData data;
+			data.minDistance = 1000.0f;
+			data.closestJoint = -1;
 			++numberOfClusters;
 			for(int j=0; j<rawClusterCloud.ca[i].pa.size(); j++)
 			{

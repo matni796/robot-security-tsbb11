@@ -1,4 +1,4 @@
-#define HYDRO
+//#define HYDRO
 
 #include <ros/ros.h>
 // PCL specific includes
@@ -129,8 +129,10 @@ void clusterExtraction(const sensor_msgs::PointCloud2ConstPtr& input)
 	printf("Downsampled Point Cloud: %dx%d\n", cloud_filtered->height, cloud_filtered->width);
 
 	std::vector<int> indices;
+	if(cloud_filtered->height != 0 && cloud_filtered->width != 0){
 	pcl::removeNaNFromPointCloud(*cloud_filtered,*cloud_filtered,indices);
 	euclidianClustering(cloud_filtered);
+	}
 }
 
 int main (int argc, char** argv)
