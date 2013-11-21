@@ -27,17 +27,17 @@ struct ObjectData{
 
 struct ObjectDataList{
 	std::vector<ObjectData> list;
-	int closestObject; //index
+	int closestObject=-1; //index
 	clustering::clusterArray clouds;
 };
 
 class DistanceHandler{
 private:
 	ros::Subscriber calibrationSubscriber, robotSubscriber, clusteringSubscriber;
-	ros::Publisher cylinderPublisher, pointCloudPublisher;
+	ros::Publisher linePublisher, pointCloudPublisher;
 	clustering::clusterArray rawClusters;
 	float insideRobotParameter;
-	visualization_msgs::Marker cylinder;
+	visualization_msgs::Marker line;
 	ObjectDataList objects;
 	ObjectDataList robot;
 	std::vector<cv::Mat_ <float> > robotJoint;
@@ -49,28 +49,30 @@ private:
 
 public:
 	DistanceHandler(ros::NodeHandle& nh) :
-	publishedPointCloud(new pcl::PointCloud<pcl::PointXYZ>())   {
+		publishedPointCloud(new pcl::PointCloud<pcl::PointXYZ>())   {
 		//calibrationSubscriber = nh.subscribe("calibration_data", 1, &DistanceHandler::calibrationCallback, this);
 		//TODO add robotSubsriber
 		clusteringSubscriber = nh.subscribe("cluster_vectors", 1,  &DistanceHandler::distanceCallback, this);
-		cylinderPublisher = nh.advertise<visualization_msgs::Marker>("robot_cylinder", 0);
+		linePublisher = nh.advertise<visualization_msgs::Marker>("closest_line", 0);
 		pointCloudPublisher = nh.advertise<sensor_msgs::PointCloud2>("objects",1);
 
 		//only for testing
 		cv::Mat test;
 		test = (cv::Mat_<float>(3,1) <<1.00f,0.0f,100.0f);
 		robotJoint.push_back(test);
-		test =(cv::Mat_<float>(3,1) <<1.00f,0.0f,2.0f);
+		test =(cv::Mat_<float>(3,1) <<1.00f,0.0f,1.5f);
+		robotJoint.push_back(test);
+		test =(cv::Mat_<float>(3,1) <<-1.00f,0.0f,1.5f);
 		robotJoint.push_back(test);
 		sqrLengthBetweenJoints.push_back(1.0f);
 		radiusOfCylinders.push_back(0.01f);
 		insideRobotParameter = 0.4;
 
-		cylinder.header.frame_id = "/camera_depth_frame";
-		cylinder.header.stamp=ros::Time();
-		cylinder.id = 0;
-		cylinder.type = visualization_msgs::Marker::CYLINDER;
-		cylinder.action = visualization_msgs::Marker::ADD;
+		line.header.frame_id = "/camera_depth_frame";
+		line.header.stamp=ros::Time();
+		line.id = 0;
+		line.type = visualization_msgs::Marker::ARROW;
+		line.action = visualization_msgs::Marker::ADD;
 
 	}
 
@@ -79,7 +81,7 @@ public:
 		rawClusters = msg;
 		removeRobot(msg);
 		setClosestObject();
-		publishRobot();
+		//publishLine();
 		publishPointCloud(objects.clouds);
 		displayCurrentStatus();
 	}
@@ -97,29 +99,36 @@ public:
 		pointCloudPublisher.publish(publishedPointCloud);
 	}
 
-	void publishRobot(){
-			cv::Mat joint1 = robotJoint[0];
-			cv::Mat joint2 = robotJoint[1];
-			cylinder.pose.position.x=joint1.at<float>(0,0);
-			cylinder.pose.position.y=joint1.at<float>(1,0);
-			cylinder.pose.position.z=joint1.at<float>(2,0);
-			float diffX =joint2.at<float>(0,0)-joint1.at<float>(0,0);
-			float diffY =joint2.at<float>(1,0)-joint1.at<float>(1,0);
-			float diffZ =joint2.at<float>(2,0)-joint1.at<float>(2,0);
-			cylinder.pose.orientation.x =diffX;
-			cylinder.pose.orientation.y =diffY;
-			cylinder.pose.orientation.z =diffZ;
+	void publishLine(){
+		if(objects.closestObject!= -1){
+			cv::Mat joint = robotJoint[objects.list[objects.closestObject].closestJoint];
+			pcl::PointXYZ objectPoint = objects.list[objects.closestObject].minPoint;
+			/*line.pose.position.x=joint.at<float>(0,0);
+			line.pose.position.y=joint.at<float>(1,0);
+			line.pose.position.z=joint.at<float>(2,0);
+			float diffX = joint.at<float>(0,0)- objectPoint.x;
+			float diffY = joint.at<float>(1,0)- objectPoint.y;
+			float diffZ = joint.at<float>(2,0)- objectPoint.z;
+			line.pose.orientation.x =diffX;
+			line.pose.orientation.y =diffY;
+			line.pose.orientation.z =diffZ;*/
+			line.points[0].x = joint.at<float>(0,0);
+			line.points[0].y = joint.at<float>(1,0);
+			line.points[0].z = joint.at<float>(2,0);
+			line.points[1].x = objectPoint.x;
+			line.points[1].y = objectPoint.y;
+			line.points[1].z = objectPoint.z;
 			//cylinder.pose.orientation.w = 10.0f;
-			cylinder.scale.x=1.0;
-			cylinder.scale.y=1.0;
-			cylinder.scale.z=1.0;
-			cylinder.color.a=0.1;
-			cylinder.color.g=1.0;
-			cylinder.color.b=0.0;
-			cylinder.color.r=0.0;
-			cylinderPublisher.publish(cylinder);
-
+			line.scale.x=0.1;
+			line.scale.y=0.1;
+			line.scale.z=0.1;
+			line.color.a=1.0;
+			line.color.g=1.0;
+			line.color.b=0.0;
+			line.color.r=0.0;
+			linePublisher.publish(line);
 		}
+	}
 
 
 	float compareToRobot(float x, float y, float z, cv::Mat& joint){
@@ -130,7 +139,9 @@ public:
 	//Functions regarding removal of the robot!
 	void removeRobot(clustering::clusterArray& rawClusterCloud){
 		objects.list.clear();
+		objects.closestObject = -1;
 		robot.list.clear();
+
 		for(int i=0; i<rawClusterCloud.ca.size(); i++)
 		{
 			ObjectData data;
@@ -151,7 +162,7 @@ public:
 
 	void pointInsideRobot(clustering::point inputPoint, ObjectData& data){
 		for(int i=0; i<robotJoint.size()-1; i++){
-				pointInsideCylinder(robotJoint[i],robotJoint[i+1],sqrLengthBetweenJoints[i],radiusOfCylinders[i],inputPoint,data, i);
+			pointInsideCylinder(robotJoint[i],robotJoint[i+1],sqrLengthBetweenJoints[i],radiusOfCylinders[i],inputPoint,data, i);
 		}
 	}
 
@@ -214,9 +225,9 @@ public:
 	}
 
 	void displayCurrentStatus(){
-			std::cout << "There are " << objects.list.size() << " objects visible\n";
-			std::cout << "There are " << robot.list.size() << " clouds considered robot\n";
-		 if (objects.list.size() != 0){
+		std::cout << "There are " << objects.list.size() << " objects visible\n";
+		std::cout << "There are " << robot.list.size() << " clouds considered robot\n";
+		if (objects.list.size() != 0){
 			std::cout << "The closest object is " << objects.list[objects.closestObject].minDistance << " m away from joint number ";
 			std::cout  << objects.list[objects.closestObject].closestJoint << "\n";
 		}
