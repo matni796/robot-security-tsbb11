@@ -25,6 +25,12 @@ struct ObjectData{
 	int outside;
 }; //index
 
+struct SecurityDistances{
+	float redDistance;
+	float yellowDistance;
+	float greenDistance;
+};
+
 struct ObjectDataList{
 	std::vector<ObjectData> list;
 	int closestObject; //index
@@ -46,6 +52,7 @@ private:
 	pcl::PointXYZ minPoint;
 	int numberOfClusters;
 	pcl::PointCloud<pcl::PointXYZ>::Ptr publishedPointCloud;
+	SecurityDistances safetyZones;	
 
 public:
 	DistanceHandler(ros::NodeHandle& nh) :
@@ -58,7 +65,7 @@ public:
 		objects.closestObject = -1;
 		//only for testing
 		cv::Mat test;
-		test = (cv::Mat_<float>(3,1) <<1.00f,0.0f,100.0f);
+		test = (cv::Mat_<float>(3,1) <<-1.00f,0.0f,1.5f);
 		robotJoint.push_back(test);
 		test =(cv::Mat_<float>(3,1) <<1.00f,0.0f,1.5f);
 		robotJoint.push_back(test);
@@ -67,13 +74,18 @@ public:
 		sqrLengthBetweenJoints.push_back(1.0f);
 		radiusOfCylinders.push_back(0.01f);
 		insideRobotParameter = 0.4;
-
+		
+		//initializing the closest line.
 		line.header.frame_id = "/camera_depth_frame";
 		line.header.stamp=ros::Time();
 		line.id = 0;
 		line.type = visualization_msgs::Marker::LINE_STRIP;
 		line.action = visualization_msgs::Marker::ADD;
 
+		//initialize security distances
+		safetyZones.redDistance = 0.25f;
+		safetyZones.yellowDistance = 0.5f;
+		safetyZones.greenDistance = 0.75f;
 	}
 
 	///Functions regarding calculation of distance
@@ -103,39 +115,35 @@ public:
 		if(objects.closestObject!= -1){
 			cv::Mat joint = robotJoint[objects.list[objects.closestObject].closestJoint];
 			pcl::PointXYZ objectPoint = objects.list[objects.closestObject].minPoint;
-			/*line.pose.position.x=joint.at<float>(0,0);
-			line.pose.position.y=joint.at<float>(1,0);
-			line.pose.position.z=joint.at<float>(2,0);
-			float diffX = joint.at<float>(0,0)- objectPoint.x;
-			float diffY = joint.at<float>(1,0)- objectPoint.y;
-			float diffZ = joint.at<float>(2,0)- objectPoint.z;
-			line.pose.orientation.x =diffX;
-			line.pose.orientation.y =diffY;
-			line.pose.orientation.z =diffZ;*/
-			geometry_msgs::Point p;
-			p.x=joint.at<float>(0,0);
-			p.y=joint.at<float>(1,0);
-			p.z= joint.at<float>(2,0);
-			line.points.push_back(p);
-			p.x=objectPoint.x;
-			p.y=objectPoint.y;
-			p.z=objectPoint.z;
-			line.points.push_back(p);
-			/*
-			line.points[0].x = joint.at<float>(0,0);
-			line.points[0].y = joint.at<float>(1,0);
-			line.points[0].z = joint.at<float>(2,0);
-			line.points[1].x = objectPoint.x;
-			line.points[1].y = objectPoint.y;
-			line.points[1].z = objectPoint.z;*/
-			//cylinder.pose.orientation.w = 10.0f;
-			line.scale.x=0.1;
-			//line.scale.y=1.0;
-			//line.scale.z=1.0;
-			line.color.a=1.0;
-			line.color.g=1.0;
-			line.color.b=0.0;
-			line.color.r=0.0;
+			float distance = objects.list[objects.closestObject].minDistance;			
+			if (distance <=safetyZones.greenDistance){
+				geometry_msgs::Point p;
+				p.x=joint.at<float>(0,0);
+				p.y=joint.at<float>(1,0);
+				p.z= joint.at<float>(2,0);
+				line.points.push_back(p);
+				p.x=objectPoint.x;
+				p.y=objectPoint.y;
+				p.z=objectPoint.z;
+				line.points.push_back(p);
+				line.scale.x=0.1;				
+				if (distance <= safetyZones.redDistance){
+				line.color.a=1.0;
+				line.color.g=0.0;
+				line.color.b=0.0;
+				line.color.r=1.0;
+				} else if (distance <= safetyZones.yellowDistance){
+				line.color.a=1.0;
+				line.color.g=0.5;
+				line.color.b=0.5;
+				line.color.r=0.0;
+				} else{
+				line.color.a=1.0;
+				line.color.g=1.0;
+				line.color.b=0.0;
+				line.color.r=0.0;
+				}
+			} 
 			linePublisher.publish(line);
 			line.points.clear();
 		}
@@ -198,7 +206,7 @@ public:
 
 		dot = pdx * dx + pdy * dy + pdz * dz;
 
-		float dist = compareToRobot(testpt.x, testpt.y, testpt.z, pt2); //Will only calculate distance to the six first joints
+		float dist = compareToRobot(testpt.x, testpt.y, testpt.z, pt1); //Will only calculate distance to the six first joints
 		if (dist < data.minDistance)
 		{
 			data.minDistance = dist;
