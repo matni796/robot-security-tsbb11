@@ -125,8 +125,9 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 
 	// Publish point cloud
 		
-    publishedCloud->header.frame_id = "/camera_depth_frame";
-    publishedCloud->insert(publishedCloud->begin(), cloud.begin(), cloud.end());
+    	publishedCloud->header.frame_id = "/camera_depth_optical_frame";
+    	publishedCloud->insert(publishedCloud->begin(), cloud.begin(), cloud.end());
+	ROS_INFO("Publishing %dx%d point cloud to foreground_cloud", publishedCloud->width, publishedCloud->height);
 	pub.publish(publishedCloud);
 	//viewer.showCloud(myCloud);
 	publishedCloud->clear();
@@ -153,7 +154,7 @@ int main (int argc, char** argv)
 	cv::namedWindow("Frame");
 	cv::namedWindow("Background");
 	cv::namedWindow("Foreground");
-	ros::init (argc, argv, "testKinect");
+	ros::init (argc, argv, "background_modelling");
 	ros::NodeHandle nh;
 	bg = new cv::BackgroundSubtractorMOG2(20000, 16.0f, false);
 	bg->set("nmixtures", 10);

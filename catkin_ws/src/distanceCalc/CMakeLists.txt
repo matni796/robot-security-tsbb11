@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   stereo_msgs
   message_generation
+  tf
 )
 
 generate_messages(DEPENDENCIES

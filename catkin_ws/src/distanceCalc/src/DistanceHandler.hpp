@@ -14,6 +14,7 @@
 #include <vector>
 #include <std_msgs/Float64MultiArray.h>
 #include <visualization_msgs/Marker.h>
+#include <tf/transform_listener.h>
 
 
 
@@ -49,10 +50,12 @@ private:
 	std::vector<cv::Mat_ <float> > robotJoint;
 	std::vector<float> sqrLengthBetweenJoints;
 	std::vector<float> radiusOfCylinders;
+	std::string jointNames[7] ;
 	pcl::PointXYZ minPoint;
 	int numberOfClusters;
 	pcl::PointCloud<pcl::PointXYZ>::Ptr publishedPointCloud;
 	SecurityDistances safetyZones;	
+	    	tf::TransformListener listener;	
 
 public:
 	DistanceHandler(ros::NodeHandle& nh) :
@@ -61,7 +64,7 @@ public:
 		//TODO add robotSubsriber
 		clusteringSubscriber = nh.subscribe("cluster_vectors", 1,  &DistanceHandler::distanceCallback, this);
 		linePublisher = nh.advertise<visualization_msgs::Marker>("closest_line", 0);
-		pointCloudPublisher = nh.advertise<sensor_msgs::PointCloud2>("objects",1);
+		pointCloudPublisher = nh.advertise<sensor_msgs::PointCloud2>("objects",0);
 		objects.closestObject = -1;
 		//only for testing
 		cv::Mat test;
@@ -73,10 +76,10 @@ public:
 		robotJoint.push_back(test);
 		sqrLengthBetweenJoints.push_back(1.0f);
 		radiusOfCylinders.push_back(0.01f);
-		insideRobotParameter = 0.4;
+		insideRobotParameter = 0.1;
 		
 		//initializing the closest line.
-		line.header.frame_id = "/camera_depth_frame";
+		line.header.frame_id = "/camera_depth_optical_frame";
 		line.header.stamp=ros::Time();
 		line.id = 0;
 		line.type = visualization_msgs::Marker::LINE_STRIP;
@@ -86,11 +89,22 @@ public:
 		safetyZones.redDistance = 0.25f;
 		safetyZones.yellowDistance = 0.5f;
 		safetyZones.greenDistance = 0.75f;
+
+		//defining jointNames
+		jointNames[0]="/link_s";
+		jointNames[1]="/link_l";
+		jointNames[2]="/link_e";
+		jointNames[3]="/link_u";
+		jointNames[4]="/link_r";
+		jointNames[5]="/link_b";
+		jointNames[6]="/link_t";
 	}
 
 	///Functions regarding calculation of distance
 	void distanceCallback(clustering::clusterArray msg){ //This function is what's doing all the work.
 		rawClusters = msg;
+		if(!updateRobotCoordinates())
+			return; // skip this message
 		removeRobot(msg);
 		setClosestObject();
 		publishLine();
@@ -101,13 +115,15 @@ public:
 	void publishPointCloud(clustering::clusterArray& clusters){
 		std::vector<pcl::PointXYZ> tempObjectVector;
 		publishedPointCloud->clear();
-		publishedPointCloud->header.frame_id= "/camera_depth_frame";
+		publishedPointCloud->header.frame_id= "/camera_depth_optical_frame";
+		ROS_INFO("Creating object point cloud from %d clusters\n", clusters.ca.size());
 		for(int i=0; i<clusters.ca.size();++i){
 			for (int k= 0; k<clusters.ca[i].pa.size();++k){
 				tempObjectVector.push_back(pcl::PointXYZ(clusters.ca[i].pa[k].x,clusters.ca[i].pa[k].y,clusters.ca[i].pa[k].z));
 			}
 		}
 		publishedPointCloud->insert(publishedPointCloud->begin(),tempObjectVector.begin(),tempObjectVector.end());
+		ROS_INFO("Publishing point cloud of size %dx%d to objects", publishedPointCloud->width, publishedPointCloud->height);
 		pointCloudPublisher.publish(publishedPointCloud);
 	}
 
@@ -134,9 +150,9 @@ public:
 				line.color.r=1.0;
 				} else if (distance <= safetyZones.yellowDistance){
 				line.color.a=1.0;
-				line.color.g=0.5;
-				line.color.b=0.5;
-				line.color.r=0.0;
+				line.color.g=1.0;
+				line.color.b=0.0;
+				line.color.r=1.0;
 				} else{
 				line.color.a=1.0;
 				line.color.g=1.0;
@@ -157,6 +173,7 @@ public:
 
 	//Functions regarding removal of the robot!
 	void removeRobot(clustering::clusterArray& rawClusterCloud){
+		objects.clouds.ca.clear();
 		objects.list.clear();
 		objects.closestObject = -1;
 		robot.list.clear();
@@ -243,6 +260,40 @@ public:
 				objects.closestObject= i;
 			}
 		}
+	}
+
+	bool updateRobotCoordinates(){
+		robotJoint.clear();
+		sqrLengthBetweenJoints.clear();
+		radiusOfCylinders.clear();
+		tf::StampedTransform transform;
+		cv::Mat oldJoint, joint;
+
+		try {
+			for(int i=0;i<7;++i){
+				listener.lookupTransform("/camera_depth_optical_frame", jointNames[i],
+				ros::Time(0), transform);	
+				float x =transform.getOrigin().x();
+				float y =transform.getOrigin().y();
+				float z =transform.getOrigin().z();
+
+				joint =(cv::Mat_<float>(3,1) <<x,y,z);
+				robotJoint.push_back(joint);
+				if(i > 0){
+					double sqrLength = pow(cv::norm(joint-oldJoint),2); // TODO: Check type
+					sqrLengthBetweenJoints.push_back(sqrLength);
+					radiusOfCylinders.push_back(0.04f);
+				}
+				oldJoint = joint;
+			}
+			ROS_INFO("Succesful robot position update\n");
+			return true;
+		}
+		catch(tf::TransformException ex) {
+			ROS_INFO("Failed with getting transform: %s\n", ex.what());
+			return false;	
+		}
+				
 	}
 
 	void displayCurrentStatus(){
