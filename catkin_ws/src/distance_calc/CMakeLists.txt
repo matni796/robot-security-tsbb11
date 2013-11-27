@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(distanceCalc)
+project(distance_calc)
 
 
 find_package(catkin REQUIRED COMPONENTS
@@ -29,5 +29,5 @@ catkin_package(
 CATKIN_DEPENDS message_runtime
 )
 
-add_executable(distanceCalc src/distanceCalculation.cpp)
-target_link_libraries(distanceCalc ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_INCLUDE_DIRS})
+add_executable(distance_calc src/distanceCalculation.cpp)
+target_link_libraries(distance_calc ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_INCLUDE_DIRS})

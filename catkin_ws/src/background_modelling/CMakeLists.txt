@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   #pcl
   pcl_ros
   pcl_msgs
-  pcl_conversions
+  #pcl_conversions
 )
 find_package(OpenCV REQUIRED)
 
