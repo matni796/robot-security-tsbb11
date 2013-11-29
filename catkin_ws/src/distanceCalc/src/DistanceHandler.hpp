@@ -24,12 +24,16 @@ struct ObjectData{
 	int closestJoint;
 	int inside;
 	int outside;
+	pcl::PointXYZ meanPoint;
+	bool visible;
+	clustering::pointArray cloud;
 }; //index
 
 struct SecurityDistances{
 	float redDistance;
 	float yellowDistance;
 	float greenDistance;
+	float trackingDistance;
 };
 
 struct ObjectDataList{
@@ -68,12 +72,12 @@ public:
 		objects.closestObject = -1;
 		//only for testing
 		cv::Mat test;
-		test = (cv::Mat_<float>(3,1) <<-1.00f,0.0f,1.5f);
+		test = (cv::Mat_<float>(3,1) <<0.0f,0.0f,2.0f);
 		robotJoint.push_back(test);
-		test =(cv::Mat_<float>(3,1) <<1.00f,0.0f,1.5f);
+		test =(cv::Mat_<float>(3,1) <<0.00f,0.0f,3.0f);
 		robotJoint.push_back(test);
-		test =(cv::Mat_<float>(3,1) <<-1.00f,0.0f,1.5f);
-		robotJoint.push_back(test);
+		//test =(cv::Mat_<float>(3,1) <<-1.00f,0.0f,100.0f);
+		//robotJoint.push_back(test);
 		sqrLengthBetweenJoints.push_back(1.0f);
 		radiusOfCylinders.push_back(0.01f);
 		insideRobotParameter = 0.1;
@@ -89,6 +93,7 @@ public:
 		safetyZones.redDistance = 0.25f;
 		safetyZones.yellowDistance = 0.5f;
 		safetyZones.greenDistance = 0.75f;
+		safetyZones.trackingDistance = 0.5f;
 
 		//defining jointNames
 		jointNames[0]="/link_s";
@@ -103,9 +108,9 @@ public:
 	///Functions regarding calculation of distance
 	void distanceCallback(clustering::clusterArray msg){ //This function is what's doing all the work.
 		rawClusters = msg;
-		if(!updateRobotCoordinates())
-			return; // skip this message
-		removeRobot(msg);
+		//if(!updateRobotCoordinates())
+		//	return; // skip this message
+		newCloudsHandler(msg);
 		setClosestObject();
 		publishLine();
 		publishPointCloud(objects.clouds);
@@ -171,30 +176,86 @@ public:
 		return distance;
 	}
 
-	//Functions regarding removal of the robot!
-	void removeRobot(clustering::clusterArray& rawClusterCloud){
+	// This is a big function.
+	// Process new point cloud. Make matches with previous and checks what belongs to the robot.
+	// Also calculates the distance between each point cloud, that doesn't belong to robot, and
+	// closest joint.
+	//It removes the clouds that belongs to the robot.
+	void newCloudsHandler(clustering::clusterArray& rawClusterCloud){
 		objects.clouds.ca.clear();
-		objects.list.clear();
+		// Sets every object/cloud from previous frame to invisible.
+		for (int i = 0; i < objects.list.size(); i++){
+			objects.list[i].visible = false;
+		}
+		//objects.list.clear();
+
 		objects.closestObject = -1;
 		robot.list.clear();
 
 		for(int i=0; i<rawClusterCloud.ca.size(); i++)
 		{
 			ObjectData data;
+			data.cloud.pa = rawClusterCloud.ca[i].pa;
+			data.visible = true;
 			data.minDistance = 1000.0f;
 			data.closestJoint = -1;
 			++numberOfClusters;
 			for(int j=0; j<rawClusterCloud.ca[i].pa.size(); j++)
 			{
 				pointInsideRobot(rawClusterCloud.ca[i].pa[j], data);
+				data.meanPoint.x += rawClusterCloud.ca[i].pa[j].x;
+				data.meanPoint.y += rawClusterCloud.ca[i].pa[j].y;
+				data.meanPoint.z += rawClusterCloud.ca[i].pa[j].z;
 			}
-			if((data.inside+data.outside != 0)&&!(data.inside/(data.inside+data.outside) > insideRobotParameter) ){
-				objects.clouds.ca.push_back(rawClusterCloud.ca[i]);
-				objects.list.push_back(data);
-			} else{
-				robot.clouds.ca.push_back(rawClusterCloud.ca[i]);
-				robot.list.push_back(data);
+			// Calculate the mean point for each cluster
+			data.meanPoint.x = data.meanPoint.x / rawClusterCloud.ca[i].pa.size();
+			data.meanPoint.y = data.meanPoint.y / rawClusterCloud.ca[i].pa.size();
+			data.meanPoint.z = data.meanPoint.z / rawClusterCloud.ca[i].pa.size();
+			// Finding the closest matching cloud from previous frame(similar mean value)
+			float nearestCloud = 0.5f; //This is the largest distance that a cloud could move between two frames and be recognized as the same.
+			float cloudDistance;
+			int matchingCloud;
+			bool cloudFound = false;
+			for (int k = 0; k < objects.list.size(); k++){
+				cloudDistance = powf(objects.list[k].meanPoint.x - data.meanPoint.x, 2) +
+								powf(objects.list[k].meanPoint.y - data.meanPoint.y, 2) +
+								powf(objects.list[k].meanPoint.z - data.meanPoint.z, 2);
+				if (cloudDistance < nearestCloud){
+					matchingCloud = k;
+					nearestCloud = cloudDistance;
+					cloudFound = true;
+				}
 			}
+			// Update list of object
+			if(cloudFound){
+				objects.list[matchingCloud] = data;
+
+				std::cout << "Cloud is tracked! \n" << std::endl;
+			}
+
+			// if statement checks if the object belongs to the robot or not
+			if((data.inside+data.outside != 0)&&!(data.inside/(data.inside+data.outside) > insideRobotParameter)){
+				//objects.clouds.ca.push_back(rawClusterCloud.ca[i]);
+				if(!cloudFound){
+					objects.list.push_back(data);
+					std::cout << "New cloud! \n" << std::endl;
+				}
+			} else{// This is a robot object
+					robot.clouds.ca.push_back(rawClusterCloud.ca[i]);
+					robot.list.push_back(data);
+			}
+
+		}
+
+		// Check if any of the invisible objects could have disappeared out of the frame.
+		for (int i = 0; i < objects.list.size(); i++){
+			if (objects.list[i].visible == false && objects.list[i].minDistance > safetyZones.trackingDistance){
+				std::cout << "Remove object from list" << std::endl;
+				objects.list.erase (objects.list.begin() + i);// Erases the object list at position i.
+			}
+		}
+		for(int i = 0; i < objects.list.size(); i++){
+			objects.clouds.ca.push_back(objects.list[i].cloud);
 		}
 	}
 
