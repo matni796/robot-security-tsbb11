@@ -1,8 +1,8 @@
 /*
  * calibration.cpp
  *
- *  Created on: Oct 17, 2013
- *      Author: olle
+ *	Created on: Oct 17, 2013
+ *		Author: olle
  */
 
 #include <ros/ros.h>
@@ -49,57 +49,60 @@ public:
 			return;
 		}
 		
-		if(findChessboardCorners(cv_ptr->image, patternSize, corners, CV_CALIB_CB_ADAPTIVE_THRESH)) {
+		bool success = findChessboardCorners(cv_ptr->image, patternSize, corners, CV_CALIB_CB_ADAPTIVE_THRESH);
+		int expectedCorners = patternSize.width * patternSize.height;
+		ROS_INFO("%s at %2d / %2d chessboard corners", success ? "Found" : "Not found", corners.size(), expectedCorners);
+		if(success && corners.size() == expectedCorners) {
 			cv::Mat rvec, tvec;
 			cv::solvePnP(boardPoints, corners, intrinsics, distortions, rvec, tvec, false);
 
 			tf::Transform transform;
 			transform.setOrigin(tf::Vector3(tvec.at<double>(0), tvec.at<double>(1), tvec.at<double>(2)));
 			transform.setRotation(tf::Quaternion(rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2)));
-
+			ROS_INFO("Publishing t = [ %4.1f, %4.1f, %4.1f ] m, r = [ %4.1f, %4.1f, %4.1f ] rad",
+					 tvec.at<double>(0), tvec.at<double>(1), tvec.at<double>(2),
+					 rvec.at<double>(0), rvec.at<double>(1), rvec.at<double>(2));
 			br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "camera_rgb_optical_frame", "pattern")); 
 		}
 	}
 private:
-   
+	
 };
 
 using namespace std;
 
 std::string getEnvVar( std::string const & key ) {
-    char * val;
-    val = getenv( key.c_str() );
-    std::string retval = "";
-    if (val != NULL) {
+	char * val;
+	val = getenv( key.c_str() );
+	std::string retval = "";
+	if (val != NULL) {
 		retval = val;
-    }
-    else {
+	}
+	else {
 		cerr << "Warning! Environmentvariable " << key << " is not set!";
-    }
-    return retval;
+	}
+	return retval;
 }
 
 
 int main (int argc, char** argv) {
 	sensor_msgs::CameraInfo camInfo;
 	std::string cameraMatrixPath = getEnvVar("CAMERA_MATRIX_PATH"), cameraName;
-    camera_calibration_parsers::readCalibration( getEnvVar("CAMERA_MATRIX_PATH")+"/camMatRGB.yaml", cameraName, camInfo);
+	camera_calibration_parsers::readCalibration( getEnvVar("CAMERA_MATRIX_PATH")+"/camMatRGB.yaml", cameraName, camInfo);
 
-    float fx = camInfo.P.elems[0];
-    float cx = camInfo.P.elems[2];
-    float fy = camInfo.P.elems[5];
-    float cy = camInfo.P.elems[6];
+	float fx = camInfo.P.elems[0];
+	float cx = camInfo.P.elems[2];
+	float fy = camInfo.P.elems[5];
+	float cy = camInfo.P.elems[6];
 
 	cv::Mat intrinsics = (cv::Mat_<double>(3,3) << fx, 0 ,cx , 0, fy, cy, 0, 0, 1);
 	cv::Mat distortion = (cv::Mat_<double>(1,5) << camInfo.D[0], camInfo.D[1],
-				  camInfo.D[2], camInfo.D[3], camInfo.D[4]);
+						  camInfo.D[2], camInfo.D[3], camInfo.D[4]);
 
-	
-
-    ros::init (argc, argv, "calibration");
+	ros::init (argc, argv, "calibration");
 	Calibration cal(0.04, cv::Size(8, 6), intrinsics, distortion);
-    ros::NodeHandle nh;
-    ros::Subscriber sub = nh.subscribe(std::string("/camera/rgb/image_mono"), 0, &Calibration::imageReceivedCallback, &cal);
-    ros::spin();
+	ros::NodeHandle nh;
+	ros::Subscriber sub = nh.subscribe(std::string("/camera/rgb/image_mono"), 1, &Calibration::imageReceivedCallback, &cal);
+	ros::spin();
 }
 

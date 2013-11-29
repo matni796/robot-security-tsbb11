@@ -156,7 +156,7 @@ int main (int argc, char** argv)
 	cv::namedWindow("Foreground");
 	ros::init (argc, argv, "background_modelling");
 	ros::NodeHandle nh;
-	bg = new cv::BackgroundSubtractorMOG2(20000, 16.0f, false);
+	bg = new cv::BackgroundSubtractorMOG2(10000, 16.0f, false);
 	bg->set("nmixtures", 10);
 
 	// Create a ROS subscriber for the input point cloud
