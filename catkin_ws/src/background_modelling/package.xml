@@ -55,8 +55,8 @@
   <run_depend>stereo_msgs</run_depend>
   <run_depend>camera_calibration_parsers</run_depend>
   <!-- <run_depend>pcl</run_depend>-->
-  <run_depend>pcl_conversions</run_depend>
-  <run_depend>pcl_conversions</run_depend>
+  <!--<run_depend>pcl_conversions</run_depend>
+  <run_depend>pcl_conversions</run_depend>-->
   <run_depend>pcl_msgs</run_depend>
 <run_depend>pcl_msgs</run_depend>
   <run_depend>pcl_ros</run_depend>

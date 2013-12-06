@@ -105,7 +105,7 @@ void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) 
 //		cout << clusterArr.ca[1].pa.size() << endl;
 //
 //	}
-
+	ROS_INFO("Publishing cluster array of size %d to cluster_vectors", clusterArr.ca.size());
 	chatter_pub.publish(clusterArr);
 
 }
@@ -119,14 +119,14 @@ void downsample(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc,
 
 void clusterExtraction(const sensor_msgs::PointCloud2ConstPtr& input)
 {
-	printf("Received Point Cloud: %dx%d\n", input->height, input->width);
+	ROS_INFO("Received Point Cloud: %dx%d", input->height, input->width);
 	//ROS_INFO("Received Point Cloud: %d.", input.height);
 	boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc(new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::fromROSMsg<pcl::PointXYZ>(*input,*pc);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
 	downsample(pc,cloud_filtered);
 
-	printf("Downsampled Point Cloud: %dx%d\n", cloud_filtered->height, cloud_filtered->width);
+	ROS_INFO("Downsampled Point Cloud: %dx%d", cloud_filtered->height, cloud_filtered->width);
 
 	std::vector<int> indices;
 	if(cloud_filtered->height != 0 && cloud_filtered->width != 0){
