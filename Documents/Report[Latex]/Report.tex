@@ -1,0 +1,82 @@
+%----------------------------------------------------------------------------------------------------------
+% Robotics safety report
+%----------------------------------------------------------------------------------------------------------
+
+\documentclass[10pt,a4paper]{article}
+%----------------------------------------------------------------------------------------------------------
+% Nödvändiga bibliotek
+%----------------------------------------------------------------------------------------------------------
+
+% Sånt man behöver för vanliga svenska dokument (byt tredje radens argument mot swedish istället för english för svenska dokument)
+\usepackage[T1]{fontenc} %svenska tecken, åäö egna bokstäver
+\usepackage[utf8]{inputenc} %vald teckenkodning
+\usepackage[english]{babel} %engelsk dokumentstandard engelska rubriker
+
+\usepackage[none]{hyphenat} %ta bort ordbrytning
+
+% För att bilder och tabeller ska hamna rätt
+\usepackage{float}
+
+% Mer för bilderna
+\usepackage{graphicx}
+%\usepackage{subcaption}
+\usepackage{rotating}
+\graphicspath{{images/}} %väg till bilderna
+
+% Om man kanske vill räkna lite matte
+\usepackage{amsmath}
+
+% För att texten inte ska hoppa in en bit i nya stycken
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{0.25cm} %avtånd mellan stycken
+
+%Skapa kommandot HRule som gör ett horisontellt streck 0.5 mm tjockt (används i titlepage)
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+%\usepackage{subfiles}
+
+%----------------------------------------------------------------------------------------------------------
+% Här börjar dokumentet
+%----------------------------------------------------------------------------------------------------------
+
+\begin{document}
+
+\input{titlepage}
+
+\input{Preamble}
+	% Förord, tack osv.
+\pagebreak
+\tableofcontents
+\newpage
+
+\input{Background}
+
+\input{Project_Description}
+
+\input{Development_Environment}
+
+\input{System_Overview}
+
+\input{Subsystems}
+
+\input{Results_Evaluation}
+	
+\input{Conclusion_Discussion}
+
+
+%----------------------------------------------------------------------------------------------------------
+% Referenser
+%----------------------------------------------------------------------------------------------------------
+\begin{thebibliography}{9}
+
+\bibitem{kurssida}
+Course homepage for TSBB15, found at URL:
+http://www.cvl.isy.liu.se/education/undergraduate/tsbb15/3d-reconstruction-project
+
+\end{thebibliography}
+
+%----------------------------------------------------------------------------------------------------------
+% Slut på dokument ! :)
+%----------------------------------------------------------------------------------------------------------
+
+\end{document}
