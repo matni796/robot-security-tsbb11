@@ -45,7 +45,7 @@ source \textit{wherever\_path\_you\_put\_repository/robot\-security\-tsbb11/catk
 \item cd into the installed folder and into catkin\_ws and type catkin\_make to build.
 \end{enumerate}
 
-\subsection{Setup DX100 controller}
+\subsection{Setup of DX100 controller}
 
 \begin{enumerate}
 
@@ -90,15 +90,36 @@ Ex Memory $\rightarrow$ LOAD $\rightarrow$ job.
 
 \end{enumerate}
 
-\subsection{Setup interface between controller and computer.}
+\subsection{Setup of computer network settings}
+
+\begin{enumerate}
+
+\item Connect the computer to the controller via ethernet cable. Use the output CN104 on the YCP01 board.
+\item Edit settings for wired/local network on computer. Set computer wired network address to 192.168.255.9 and netmask 255.255.255.0.\\
+
+
+NOTE: On the computer, running Ubuntu 12.04, in the robot lab, there is a profile for the connection named “DX100”. When connecting the controller to the computer via ethernet, choose this.
+\end{enumerate}
+
+\subsection{Run program/Use of interface between controller and computer.}
+Källskript bör ordnas.\\
 Follow the instructions on \textit{http://wiki.ros.org/motoman\_driver/Tutorials/Usage}.
 \begin{itemize}
 
 
 \item On step 3, enter the controller IP \textbf{192.168.255.1}.
 
-\item  
+\item  On step 3.1.2.1, use the path \textit{..catkin\_ws/src/motoman/motoman\_config/cfg/sia20D\_mesh.xml}
+
+\item To obtain visualization, type:\\ 
+\textit{\$ roslaunch sia20d\_mesh\_arm\_navigation planning\_scene\_warehouse\_viewer\_sia20d\_mesh.launch}
+
+\item Choose the correct frame, baselink something...
+
+\item vad mer behöver man köra. kan vi skriva ett källskript som sköter ovanstående.
 \end{itemize}
+
+
 
 
 \end{document}
