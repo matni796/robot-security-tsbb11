@@ -34,6 +34,7 @@ struct SecurityDistances{
 	float yellowDistance;
 	float greenDistance;
 	float trackingDistance;
+	float trackingMin;
 };
 
 struct ObjectDataList{
@@ -51,6 +52,7 @@ private:
 	visualization_msgs::Marker line;
 	ObjectDataList objects;
 	ObjectDataList robot;
+	bool tracking;
 	std::vector<cv::Mat_ <float> > robotJoint;
 	std::vector<float> sqrLengthBetweenJoints;
 	std::vector<float> radiusOfCylinders;
@@ -72,16 +74,19 @@ public:
 		objects.closestObject = -1;
 		//only for testing
 		cv::Mat test;
-		test = (cv::Mat_<float>(3,1) <<0.0f,0.0f,2.0f);
+		test = (cv::Mat_<float>(3,1) <<1.0f,0.0f,3.5f);
 		robotJoint.push_back(test);
-		test =(cv::Mat_<float>(3,1) <<0.00f,0.0f,3.0f);
+		test =(cv::Mat_<float>(3,1) <<-1.0f,0.0f,3.5f);
 		robotJoint.push_back(test);
+		//test =(cv::Mat_<float>(3,1) <<1.0f,0.0f,3.5f);
+		//robotJoint.push_back(test);
 		//test =(cv::Mat_<float>(3,1) <<-1.00f,0.0f,100.0f);
 		//robotJoint.push_back(test);
 		sqrLengthBetweenJoints.push_back(1.0f);
 		radiusOfCylinders.push_back(0.01f);
-		insideRobotParameter = 0.1;
-		
+		insideRobotParameter = 0.8;
+		tracking = true;
+
 		//initializing the closest line.
 		line.header.frame_id = "/camera_depth_optical_frame";
 		line.header.stamp=ros::Time();
@@ -89,11 +94,12 @@ public:
 		line.type = visualization_msgs::Marker::LINE_STRIP;
 		line.action = visualization_msgs::Marker::ADD;
 
-		//initialize security distances
-		safetyZones.redDistance = 0.25f;
-		safetyZones.yellowDistance = 0.5f;
-		safetyZones.greenDistance = 0.75f;
-		safetyZones.trackingDistance = 0.5f;
+		//initialize security distances should be sqrtdded
+		safetyZones.redDistance = 0.5f;
+		safetyZones.yellowDistance = 1.0f;
+		safetyZones.greenDistance = 1.5f;
+		safetyZones.trackingDistance = 1.5f;
+		safetyZones.trackingMin = 0.5f;
 
 		//defining jointNames
 		jointNames[0]="/link_s";
@@ -108,9 +114,12 @@ public:
 	///Functions regarding calculation of distance
 	void distanceCallback(clustering::clusterArray msg){ //This function is what's doing all the work.
 		rawClusters = msg;
-		//if(!updateRobotCoordinates())
-		//	return; // skip this message
-		newCloudsHandler(msg);
+		if(!updateRobotCoordinates())
+			return; // skip this message
+		if(tracking)
+			newCloudsHandler(msg);
+		else
+			removeRobot(msg);
 		setClosestObject();
 		publishLine();
 		publishPointCloud(objects.clouds);
@@ -172,7 +181,7 @@ public:
 
 
 	float compareToRobot(float x, float y, float z, cv::Mat& joint){
-		float distance = powf(joint.at<float>(0,0)-x, 2)+powf(joint.at<float>(1,0)-y, 2)+powf(joint.at<float>(2,0)-z, 2);
+		float distance = sqrt(powf(joint.at<float>(0,0)-x, 2)+powf(joint.at<float>(1,0)-y, 2)+powf(joint.at<float>(2,0)-z, 2));
 		return distance;
 	}
 
@@ -212,15 +221,16 @@ public:
 			data.meanPoint.y = data.meanPoint.y / rawClusterCloud.ca[i].pa.size();
 			data.meanPoint.z = data.meanPoint.z / rawClusterCloud.ca[i].pa.size();
 			// Finding the closest matching cloud from previous frame(similar mean value)
-			float nearestCloud = 0.5f; //This is the largest distance that a cloud could move between two frames and be recognized as the same.
 			float cloudDistance;
 			int matchingCloud;
+			float nearestCloud = safetyZones.trackingMin;
 			bool cloudFound = false;
 			for (int k = 0; k < objects.list.size(); k++){
-				cloudDistance = powf(objects.list[k].meanPoint.x - data.meanPoint.x, 2) +
+				cloudDistance = sqrt(powf(objects.list[k].meanPoint.x - data.meanPoint.x, 2) +
 								powf(objects.list[k].meanPoint.y - data.meanPoint.y, 2) +
-								powf(objects.list[k].meanPoint.z - data.meanPoint.z, 2);
+								powf(objects.list[k].meanPoint.z - data.meanPoint.z, 2));
 				if (cloudDistance < nearestCloud){
+
 					matchingCloud = k;
 					nearestCloud = cloudDistance;
 					cloudFound = true;
@@ -236,7 +246,7 @@ public:
 			// if statement checks if the object belongs to the robot or not
 			if((data.inside+data.outside != 0)&&!(data.inside/(data.inside+data.outside) > insideRobotParameter)){
 				//objects.clouds.ca.push_back(rawClusterCloud.ca[i]);
-				if(!cloudFound){
+				if(!cloudFound && data.minDistance > safetyZones.trackingDistance){
 					objects.list.push_back(data);
 					std::cout << "New cloud! \n" << std::endl;
 				}
@@ -251,13 +261,40 @@ public:
 		for (int i = 0; i < objects.list.size(); i++){
 			if (objects.list[i].visible == false && objects.list[i].minDistance > safetyZones.trackingDistance){
 				std::cout << "Remove object from list" << std::endl;
-				objects.list.erase (objects.list.begin() + i);// Erases the object list at position i.
-			}
+				objects.list.erase (objects.list.begin() + i);// Erases the object list at position i.								
+				}
 		}
 		for(int i = 0; i < objects.list.size(); i++){
 			objects.clouds.ca.push_back(objects.list[i].cloud);
 		}
 	}
+
+ //Functions regarding removal of the robot without tracking!
+        void removeRobot(clustering::clusterArray& rawClusterCloud){
+                objects.clouds.ca.clear();
+                objects.list.clear();
+                objects.closestObject = -1;
+                robot.list.clear();
+
+                for(int i=0; i<rawClusterCloud.ca.size(); i++)
+                {
+                        ObjectData data;
+                        data.minDistance = 1000.0f;
+                        data.closestJoint = -1;
+                        ++numberOfClusters;
+                        for(int j=0; j<rawClusterCloud.ca[i].pa.size(); j++)
+                        {
+                                pointInsideRobot(rawClusterCloud.ca[i].pa[j], data);
+                        }
+                        if((data.inside+data.outside != 0)&&!(data.inside/(data.inside+data.outside) > insideRobotParameter) ){
+                                objects.clouds.ca.push_back(rawClusterCloud.ca[i]);
+                                objects.list.push_back(data);
+                        } else{
+                                robot.clouds.ca.push_back(rawClusterCloud.ca[i]);
+                                robot.list.push_back(data);
+                        }
+                }
+        }
 
 	void pointInsideRobot(clustering::point inputPoint, ObjectData& data){
 		for(int i=0; i<robotJoint.size()-1; i++){
@@ -314,13 +351,15 @@ public:
 	}
 
 	void setClosestObject(){
-		int minDistance = 20000.0f;
+		float minDistance = 20000.0f;
 		for (int i = 0;i<objects.list.size();++i){
 			if (objects.list[i].minDistance < minDistance){
 				minDistance = objects.list[i].minDistance;
 				objects.closestObject= i;
+				std::cout << objects.list[i].minDistance << "\n";
 			}
 		}
+		std::cout <<"Size in setClosestObject(): " << objects.list.size() << " closest Object is: " << objects.closestObject << " closest dist: " << minDistance << std::endl;
 	}
 
 	bool updateRobotCoordinates(){
@@ -362,7 +401,15 @@ public:
 		std::cout << "There are " << robot.list.size() << " clouds considered robot\n";
 		if (objects.list.size() != 0){
 			std::cout << "The closest object is " << objects.list[objects.closestObject].minDistance << " m away from joint number ";
-			std::cout  << objects.list[objects.closestObject].closestJoint << "\n";
+			std::cout << "The closest object is " << objects.closestObject << "\n";
+			for(int i=0; i<objects.list.size(); i++){
+				/*if(objects.list[i].visible)
+					std::cout << "object " << i << " visible" << std::endl;
+				else
+				   	std::cout << "object " << i <<" invisible" << std::endl;*/
+				std::cout << "object: "<< i<< " distance:" << objects.list[i].minDistance << "\n"; 
+					
+			}
 		}
 	}
 };

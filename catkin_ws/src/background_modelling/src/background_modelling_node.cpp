@@ -98,10 +98,10 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 	cv::erode(fore,fore,cv::Mat());
 	cv::dilate(fore,fore,cv::Mat());
 
-	cv::imshow("Foreground", fore);
-	cv::imshow("Frame",frame);
-	cv::imshow("Background",back);
-	cv::waitKey(10);
+	//cv::imshow("Foreground", fore);
+	//cv::imshow("Frame",frame);
+	//cv::imshow("Background",back);
+	//cv::waitKey(10);
 	float x,y,z;
 	cloud.clear();
 
@@ -151,9 +151,9 @@ int main (int argc, char** argv)
 	cy = camInfo.P.elems[6];
 
 	// Initialize ROS and openCV windows
-	cv::namedWindow("Frame");
-	cv::namedWindow("Background");
-	cv::namedWindow("Foreground");
+	//cv::namedWindow("Frame");
+	//cv::namedWindow("Background");
+	//cv::namedWindow("Foreground");
 	ros::init (argc, argv, "background_modelling");
 	ros::NodeHandle nh;
 	bg = new cv::BackgroundSubtractorMOG2(10000, 16.0f, false);
