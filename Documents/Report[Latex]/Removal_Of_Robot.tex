@@ -1,1 +1,54 @@
 \subsection{Removal of Robot}
+
+
+\begin{figure}[h]
+\tdplotsetmaincoords{60}{120}
+\begin{tikzpicture}
+	[scale=5,
+		tdplot_main_coords,
+		axis/.style={->,black,very thick},
+		vector/.style={-stealth,black,very thick},
+		vector guide/.style={dashed,black,thick}]
+
+	%standard tikz coordinate definition using x, y, z coords
+	\coordinate (O) at (0,0,0);
+	%\coordinate (v) at (1,1,1.5);
+	%\coordinate (c1) at (0.1,0.1,0);
+	%\coordinate (c2) at (1.5,1.5,0.5);
+	
+	%tikz-3dplot coordinate definition using r, theta, phi coords
+	\tdplotsetcoord{v}{1.5}{55}{55}
+	\tdplotsetcoord{c2}{1.5}{90}{55}
+	%draw axes
+	\draw[axis] (0,0,0) -- (1,0,0) node[anchor=north east]{$x$};
+	\draw[axis] (0,0,0) -- (0,1,0) node[anchor=north west]{$y$};
+	\draw[axis] (0,0,0) -- (0,0,1) node[anchor=south]{$z$};
+	
+	%draw a vector from O to P
+	\draw[vector] (O) -- (v);
+	\draw[vector] (O) -- (c2);
+	\draw[vector guide] (v) -- (vxy);
+    \draw[vector] (O) -- (vxy);
+	%\draw[vector guide] (c2) -- (vxy);
+	
+	%\draw (v) circle[radius=2pt];
+	\fill (v) circle[radius=0.15mm];
+	\fill (vxy) circle[radius=0.15mm];
+
+	\fill (c2) circle[radius=0.15mm];
+	
+\node[above right] at (vxy) {\hspace{5 pt}$\mathbf{v_1 = v^Te\cdot e}$};
+\node[right] at (v) {\hspace{10 pt}$\mathbf{v=p-c_1}$};
+\node[right] at (c2) {\hspace{10 pt}$\mathbf{e=c_2-c_1}$};
+
+\end{tikzpicture}
+\caption{Geometry for computing the orthogonal distance to a vecor}
+\label{geometry}
+\end{figure}
+\vspace{20 pt}
+
+The objective is to conclude if {\bf p} is inside a cylinder with squared radius $r^2$ and endpoints ${\bf c_1}$, ${\bf c_2}$. First ${\bf c_1}$ is subtracted from all points to get the vectors shown in figure \ref{geometry}. $\bf v_1$ is obtained by projecting $\bf v$ onto $\bf e$ The condition that ${\bf v}$ is in between the caps (endpoints) of the cylinder is the following:\\
+ $ 0 < {\bf v}^T{\bf e} < \| {\bf c_1}-{\bf c_2}\|$ if this is not fulfilled this distance is discarded. Otherwise the orthogonal squared distance using pythagoras formula is\\
+
+$\displaystyle d^2 = \|{\bf v}\|^2 - \|{\bf v_1}\|^2= {\bf v}^T{\bf v} -\frac{({\bf v}^T{\bf e})^2}{{\bf e}^T {\bf e}}$ if $d^2 < r^2$ the point is inside the cylinder
+
