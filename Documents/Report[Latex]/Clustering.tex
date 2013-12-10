@@ -1,3 +1,9 @@
 %Clustering of point cloud
 
 \subsection{Clustering}
+Clustering
+The clustering node receives a point cloud from the background segmentation node corresponding to the extracted foreground i.e. moving objects. The purpose of the clustering node is to divide the entire point cloud into individual objects. It also removes noise and objects that are not considered to be large enough.  
+
+The reason why individual objects are necessary is because the closest distance to every object compared to the robot is desired. It is not sufficient to know the distance from the closest point in the whole point cloud to the robot. Separating the entire point cloud into individual clouds also provides the possibility for an implementation of tracking point cloud objects. 
+
+The separation of objects is done by separating the entire point cloud into clusters. This is done using an euclidean cluster extraction algorithm. A simple outline of the algorithm is that for each point, check whether there is another point within a given radius and if so assign this point to the same cluster. In other words, the points that are close enough are concatenated to each other. If there is no point within the given radius that already is assigned to a cluster then the point should correspond to a new cluster. The cluster extraction is based on the algorithm given by Point Cloud Library \cite{CE}.

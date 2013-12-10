@@ -1,0 +1,12 @@
+\section*{Background segementation}
+
+The background segmentation node is based on the backgroundSubtractorMOG2 from OpenCV \cite{BGS} which uses Gaussian mixtures to perform the segmentation. The background segmentation results in a binary image of the foreground. The foreground is converted to a point cloud that describes the shape of the foreground in camera coordinates. Using the foreground and depth image it is possible to construct a point cloud. For each foreground pixel the corresponding depth value $P_z$, pixel coordinates $P_x$, $P_y$ and intrinsic parameter can be used to obtain the world coordinates as follows.
+
+$P_x = (p_x - c_x) * P_z / f_x$
+$P_y = (p_y - c_y) * P_z / f_y$
+
+and the point $P = [P_x, P_y, P_Z]^T$
+
+By applying these formulas to all foreground pixels the point cloud is achieved.
+
+
