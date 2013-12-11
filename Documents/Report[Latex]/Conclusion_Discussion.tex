@@ -6,7 +6,7 @@ This system is based on a background segmentation to find moving objects in the 
 
 One option in the system is to turn off tracking. If it is guaranteed that no one will approach the robot and then stand still, the background segmentation will be sufficient.  
 
-It is remarkable how well the background segmentation works for the system compared to other similar systems. One reason for that is that the depth image, used in this system, do not have shadows, reflections or illumination differences in it. This makes 
+It is remarkable how well the background segmentation works for the system compared to other similar systems. The reason is that the depth image, used in this system, do not have shadows, reflections or illumination differences in it. The absence of those visual artefacts makes the values of background pixels very constant. Constant background pixels will give a noise free foreground image. 
 
 In this project it has only been one kinect camera in use, this means that the position of the camera is of high importance since it needs to cover up the entire collaboration area. Unfortunately this was not possible to achieve and the camera setup for this project was therefore not perfect. The resulting camera position was not exactly over the robot, meaning that the system received a tilted view of the scene. A tilted view of the scene can result in objects which in fact are not connected to each other to be interpreted as connected, that is one object instead of two. In a more ideal case, it would be preferred to use more than one camera or have the camera placed exactly above the robot. 
 
