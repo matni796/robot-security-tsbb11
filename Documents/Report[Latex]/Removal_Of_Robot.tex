@@ -48,14 +48,17 @@ Removing the clusters corresponding to the robot is done by using the joint coor
 \caption{Geometry for computing the orthogonal distance between two vectors}
 \label{geometry}
 \end{figure}
-\vspace{20 pt}
 
 The objective is to conclude if {\bf p} is inside a cylinder with squared radius $r^2$ and endpoints ${\bf c_1}$, ${\bf c_2}$. First ${\bf c_1}$ is subtracted from all points to get the vectors shown in figure \ref{geometry}. $\bf v_1$ is obtained by projecting $\bf v$ onto $\bf e$.
 
 \begin{enumerate}
-\item If the vector $\bf v$ lies between the caps (endpoints) of the cylinder, the following is fullfilled: $ 0 < {\bf v}^T{\bf e} < \| {\bf c_1}-{\bf c_2}\|^2$ if this is not the case, this distance is discarded since it is closer to another cylinder. 
+\item If the vector $\bf v$ lies between the caps (endpoints) of the cylinder, the following is fullfilled: $ 0 < {\bf v}^T{\bf e} < \| {\bf e}\|^2$ if this is not the case, this distance is discarded since it is closer to another cylinder. 
 
+<<<<<<< HEAD
 \item The orthogonal squared distance using Pythagoras formula is:\\\\
+=======
+\item The orthogonal squared distance using pythagoras formula is:\\
+>>>>>>> 2ba0b57d67dfac4b2eb97de65bc150a08125447b
 \begin{center}
 $\displaystyle d^2 = \|{\bf v}\|^2 - \|{\bf v_1}\|^2= {\bf v}^T{\bf v} -\frac{({\bf v}^T{\bf e})^2}{{\bf e}^T {\bf e}}$. 
 \end{center}
