@@ -14,7 +14,7 @@ The data published by the controller in JOINT\_STATES are the radial position of
 \end{figure}
 
 \subsubsection{Objects}
-The objects in the image that the tracking algorithm considers being real moving objects are visualized. They are published as point clouds so that rviz can subscribe them and visualize them. If the tracking algorithm believes that an object has disappeared because of non-movement, it publishes the last seen point cloud of the object i.e. static objects in the scene are objects that the system thinks are standing still. 
+The objects in the image that the tracking algorithm considers being real moving objects are visualized. They are published as point clouds so that rviz can subscribe to them and visualize them. If the tracking algorithm believes that an object has disappeared because of non-movement, it publishes the last seen point cloud of the object i.e. static objects in the scene are objects that the system thinks are standing still. 
 
 \begin{figure}[H]
 \begin{center}
@@ -33,7 +33,7 @@ The objects in the image that the tracking algorithm considers being real moving
 \end{figure}  
 
 \subsubsection{Distances}
-To visualize the resulting state of the system (the current safety zone) a line between the closest object and the closest joint of the robot visualized. This line switches color depending on which state the system is in. The color of the line is thereby the result of the system. 
+To visualize the resulting state of the system (the current safety zone) a line between the closest object and the closest joint of the robot is drawn. This line switches color depending on which state the system is in. The color of the line is thereby the result of the system. 
 
 \begin{itemize}
   \item Red - Emergency zone

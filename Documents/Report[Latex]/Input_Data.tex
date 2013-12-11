@@ -2,8 +2,8 @@
 \subsection{Input Data}
 The different types of input data to the system.
 \subsubsection{Joint states of robot}
-When connection with the controller is established the joint states will be available. Each joint has a value in radians describing its state, i.e. its revolution. The objective is to build a model of the robot in camera coordinates where the distance to a moving object, represented as a point cloud in 3D space can be computed.
-The data regarding joint states is used for both visualization, in shape of a mesh figure, and for calculation of the robot position in relation to other objects. These two are independent with respect to each other.
+When connection with the controller is established the joint states will be available. Each joint has a value in radians describing its state, i.e. its revolution. The objective is to build a model of the robot in camera centered coordinates where the distance to a moving object, represented as a point cloud in 3D space can be computed.
+The data regarding joint states is used for both visualization, in the shape of a mesh figure, and for calculation of the robot's position in relation to other objects. These two are independent with respect to each other.
 
 \subsubsection{Depth-image from Kinect}
 The IR projector and camera provides a depth image of the collaboration area. The data is used for background segmentation and further on for clustering and tracking. Calibration of the IR cameras intrinsic parameters is performed as well. This ensures a correct transformation between world and camera coordinates.
