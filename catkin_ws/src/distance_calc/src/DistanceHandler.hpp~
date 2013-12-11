@@ -85,7 +85,7 @@ public:
 		sqrLengthBetweenJoints.push_back(1.0f);
 		radiusOfCylinders.push_back(0.01f);
 		insideRobotParameter = 0.8;
-		tracking = false;
+		tracking = true;
 
 		//initializing the closest line.
 		line.header.frame_id = "/camera_depth_optical_frame";
@@ -98,7 +98,7 @@ public:
 		safetyZones.redDistance = 0.5f;
 		safetyZones.yellowDistance = 0.8f;
 		safetyZones.greenDistance = 1.2f;
-		safetyZones.trackingDistance = 1.1f;
+		safetyZones.trackingDistance = 1.3f;
 		safetyZones.trackingMin = 1.0f;
 
 		//defining jointNames
@@ -125,20 +125,6 @@ public:
 		publishPointCloud(objects.clouds);
 		displayCurrentStatus();
 	}
-
-	/*		void loop(){
-		if(!updateRobotCoordinates())
-		    return; // skip this message
-		if(tracking)
-			newCloudsHandler(rawClusters);
-		else
-			removeRobot(rawClusters);
-		setClosestObject();
-		publishLine();
-		publishPointCloud(objects.clouds);
-		displayCurrentStatus();
-
-		}*/
 
 	void publishPointCloud(clustering::clusterArray& clusters){
 		std::vector<pcl::PointXYZ> tempObjectVector;

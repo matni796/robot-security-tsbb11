@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   stereo_msgs
   message_generation
   tf
+  clustering
 )
 
 generate_messages(DEPENDENCIES

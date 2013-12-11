@@ -13,7 +13,6 @@
 #include <pcl-1.6/pcl/point_cloud.h>
 #include <pcl-1.6/pcl/ros/conversions.h>
 #include <pcl-1.6/pcl/point_types.h>
-#include <pcl-1.6/pcl/visualization/cloud_viewer.h>
 #include <pcl_ros/point_cloud.h>
 #endif
 
@@ -37,9 +36,13 @@ ros::Publisher pub;
 
 //openCV stuff
 cv_bridge::CvImagePtr cv_ptr;
-cv::BackgroundSubtractorMOG2 * bg;	
+cv::BackgroundSubtractorMOG2 * bg;
 std::vector<std::vector<cv::Point> > contours;
 std::vector<cv::Mat> channels;
+
+cv::Size downsampleSize;
+cv::Mat back, fore, frame, depth, normImg;
+cv::Mat buffer;
 
 // Elements from projection matrix needed for PC construction
 float fx, fy, cx, cy;
@@ -76,8 +79,6 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 
   	start=clock();  /* get current time; same as: timer = time(NULL)  */
 
-  
-
 	try
 	{
 		cv_ptr = cv_bridge::toCvCopy(msg, "");
@@ -87,20 +88,17 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 		ROS_ERROR("cv_bridge exception: %s", e.what());
 		return;
 	}
-	int nanCount = 0;
-	cv::Mat back, fore, frame, depth, normImg;
+	cv::resize(cv_ptr->image, depth, downsampleSize, 0, 0, cv::INTER_NEAREST);
+	depth.copyTo(buffer);
+	buffer = buffer * normFact;         // Normalize image so [0 m, 6 m [  is in [ 0, 256 [
+	buffer.convertTo(normImg, CV_8UC1); // Convert to uint8
 
-	cv_ptr->image.copyTo(depth);	// Copy depth image to create point cloud and vizualization
-
-	channels.clear();
-	cv_ptr->image = cv_ptr->image*normFact;			// Normalize image
-	cv_ptr->image.convertTo(normImg, CV_8UC1);		// Convert to uint8
-
+	channels.clear(); // clear channel buffer
 	channels.push_back(normImg);
 	channels.push_back(normImg);
 	channels.push_back(normImg);
-
-	cv::merge(channels,frame);
+	cv::merge(channels,frame); // merge three identical channels into one
+	
 	bg->operator()(frame, fore, -1);
 	bg->getBackgroundImage(back);
 
@@ -118,7 +116,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 		for(int v = 0; v < fore.rows; v++) {
 			if(fore.at<char>(v,u) != 0) {
 				z = depth.at<float>(v,u);
-				if(z == z) {
+				if(z == z) { // NaN check
 					x = getWorldCoord(fx,cx,z,u);
 					y = getWorldCoord(fy,cy,z,v);
 					//cloud.push_back(pcl::PointXYZ(x,y,z));
@@ -139,8 +137,8 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 	publishedCloud->clear();
 	stop = clock();
 	float time =((float)stop-(float)start)/1000.0f;
-	std::cout << "Time elapsed: " << time  << "\n";
-
+	ROS_INFO("Background modelling on %dx%d", downsampleSize.width, downsampleSize.height);
+	ROS_INFO("One iteration timed at %.3f ms (should be < %.3f ms)", time, 1000/30.0f);
 }
 
 int main (int argc, char** argv)
@@ -159,14 +157,24 @@ int main (int argc, char** argv)
 	fy = camInfo.P.elems[5];
 	cy = camInfo.P.elems[6];
 
+	float sx = 0.2f, sy = 0.2f * 4.0f / 3.0f;
+
+	downsampleSize.width = 640*sx;
+	downsampleSize.height = 480*sy;
+	
+	cx *= sx;
+	cy *= sy;
+	fx *= sx;
+	fy *= sy;
+	
 	// Initialize ROS and openCV windows
 	cv::namedWindow("Frame");
 	cv::namedWindow("Background");
 	cv::namedWindow("Foreground");
 	ros::init (argc, argv, "background_modelling");
 	ros::NodeHandle nh;
-	bg = new cv::BackgroundSubtractorMOG2(10000, 16.0f, false);
-	bg->set("nmixtures", 10);
+	bg = new cv::BackgroundSubtractorMOG2(20000, 4.0f, false);
+	bg->set("nmixtures", 5);
 
 	// Create a ROS subscriber for the input point cloud
 	ros::Subscriber sub = nh.subscribe("/camera/depth/image", 1, imageCb);
