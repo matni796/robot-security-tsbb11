@@ -9,7 +9,7 @@ The data published by the controller in JOINT\_STATES are the radial position of
 \begin{center}
 \includegraphics[width=12 cm]{robot}
 \caption{3D-model of robot.}
-\label{tracking}
+
 \end{center}
 \end{figure}
 
@@ -20,7 +20,7 @@ The objects in the image that the tracking algorithm considers being real moving
 \begin{center}
 \includegraphics[width=12 cm]{humanandrobot}
 \caption{Human beside the robot.}
-\label{tracking}
+
 \end{center}
 \end{figure}
 
@@ -28,12 +28,19 @@ The objects in the image that the tracking algorithm considers being real moving
 \begin{center}
 \includegraphics[width=12 cm]{humanandrobotinworld2}
 \caption{Humans and robot placed in world coordinate system.}
-\label{tracking}
+
 \end{center}
 \end{figure}  
 
 \subsubsection{Distances}
 To visualize the resulting state of the system (the current safety zone) a line between the closest object and the closest joint of the robot visualized. This line switches color depending on which state the system is in. The color of the line is thereby the result of the system. 
+
+\begin{itemize}
+  \item Red - Emergency zone
+  \item Yellow - Safety zone 1 
+  \item Green - Safety zone 2
+  \item No line - Outside safety zone 2 
+\end{itemize}
 
 //lägg in en bild på hela systemet
 
