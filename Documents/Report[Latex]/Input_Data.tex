@@ -8,8 +8,24 @@ The data regarding joint states is used for both visualization, in shape of a me
 \subsubsection{Depth-image from Kinect}
 The IR projector and camera provides a depth image of the collaboration area. The data is used for background segmentation and further on for clustering and tracking. Calibration of the IR cameras intrinsic parameters is performed as well. This ensures a correct transformation between world and camera coordinates.
 
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=12 cm]{screenshot_depth_image}
+\caption{Depth image}
+\label{tracking}
+\end{center}
+\end{figure}
+
 \subsubsection{RGB-image from Kinect}
 The RGB camera is used for calibration of both intrinsic and extrinsic camera parameters. From those it is possible to determine a relationship between the robot and a well known positioned calibration pattern used in calibration. 
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=12 cm]{image_color}
+\caption{Depth image}
+\label{tracking}
+\end{center}
+\end{figure}
 
 \subsubsection{tf}
 The tf subsystem is a transformation management system written and maintained by Tully Foote. Since the system will have dozens of frames the tf subsystem traverser the set of known frame relations to give the transformation parameters between two arbitrary reference frames at any point in time. 
