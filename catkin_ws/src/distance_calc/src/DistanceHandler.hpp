@@ -74,7 +74,7 @@ public:
 		objects.closestObject = -1;
 		//only for testing
 		cv::Mat test;
-		test = (cv::Mat_<float>(3,1) <<1.0f,0.0f,3.5f);
+		test = (cv::Mat_<float>(3,1) <<-1.0f,0.0f,3.5f);
 		robotJoint.push_back(test);
 		test =(cv::Mat_<float>(3,1) <<-1.0f,0.0f,3.5f);
 		robotJoint.push_back(test);
@@ -99,7 +99,7 @@ public:
 		safetyZones.yellowDistance = 1.0f;
 		safetyZones.greenDistance = 1.5f;
 		safetyZones.trackingDistance = 1.5f;
-		safetyZones.trackingMin = 0.5f;
+		safetyZones.trackingMin = 1.0f;
 
 		//defining jointNames
 		jointNames[0]="/link_s";
@@ -225,7 +225,8 @@ public:
 			int matchingCloud;
 			float nearestCloud = safetyZones.trackingMin;
 			bool cloudFound = false;
-			for (int k = 0; k < objects.list.size(); k++){
+			for (int k = 0; k < objects.list.size(); k++)
+				if(!objects.list[i].visible){{
 				cloudDistance = sqrt(powf(objects.list[k].meanPoint.x - data.meanPoint.x, 2) +
 								powf(objects.list[k].meanPoint.y - data.meanPoint.y, 2) +
 								powf(objects.list[k].meanPoint.z - data.meanPoint.z, 2));
@@ -235,6 +236,7 @@ public:
 					nearestCloud = cloudDistance;
 					cloudFound = true;
 				}
+			}
 			}
 			// Update list of object
 			if(cloudFound){
@@ -382,7 +384,7 @@ public:
 				if(i > 0){
 					double sqrLength = pow(cv::norm(joint-oldJoint),2); // TODO: Check type
 					sqrLengthBetweenJoints.push_back(sqrLength);
-					radiusOfCylinders.push_back(0.04f);
+					radiusOfCylinders.push_back(0.01f);
 				}
 				oldJoint = joint;
 			}

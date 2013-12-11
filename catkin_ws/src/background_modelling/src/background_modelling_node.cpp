@@ -1,6 +1,7 @@
 //#define HYDRO
 
 #include <ros/ros.h>
+#include <time.h>
 // PCL specific includes
 //#include <pcl-1.6/pcl/point_cloud.h>
 #ifdef HYDRO
@@ -69,6 +70,14 @@ float getWorldCoord(float f, float c, float zWorld, int screenCoord)
 
 void imageCb(const sensor_msgs::ImageConstPtr& msg)
 {
+	//time_t start, stop;
+	clock_t start, stop;  	
+
+
+  	start=clock();  /* get current time; same as: timer = time(NULL)  */
+
+  
+
 	try
 	{
 		cv_ptr = cv_bridge::toCvCopy(msg, "");
@@ -98,25 +107,22 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 	cv::erode(fore,fore,cv::Mat());
 	cv::dilate(fore,fore,cv::Mat());
 
-	//cv::imshow("Foreground", fore);
-	//cv::imshow("Frame",frame);
-	//cv::imshow("Background",back);
-	//cv::waitKey(10);
+	cv::imshow("Foreground", fore);
+	cv::imshow("Frame",frame);
+	cv::imshow("Background",back);
+	cv::waitKey(10);
 	float x,y,z;
 	cloud.clear();
 
-	for(int u = 0; u < fore.cols; u++)
-	{
-		for(int v = 0; v < fore.rows; v++)
-		{
-			if(fore.at<char>(v,u) != 0)
-			{
+	for(int u = 0; u < fore.cols; u++) {
+		for(int v = 0; v < fore.rows; v++) {
+			if(fore.at<char>(v,u) != 0) {
 				z = depth.at<float>(v,u);
-				if(z == z)
-				{
+				if(z == z) {
 					x = getWorldCoord(fx,cx,z,u);
 					y = getWorldCoord(fy,cy,z,v);
-					cloud.push_back(pcl::PointXYZ(x,y,z));
+					//cloud.push_back(pcl::PointXYZ(x,y,z));
+					publishedCloud->push_back(pcl::PointXYZ(x,y,z));
 				}
 			}
 		}
@@ -125,12 +131,15 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 
 	// Publish point cloud
 		
-    	publishedCloud->header.frame_id = "/camera_depth_optical_frame";
-    	publishedCloud->insert(publishedCloud->begin(), cloud.begin(), cloud.end());
+	publishedCloud->header.frame_id = "/camera_depth_optical_frame";
+	publishedCloud->insert(publishedCloud->begin(), cloud.begin(), cloud.end());
 	ROS_INFO("Publishing %dx%d point cloud to foreground_cloud", publishedCloud->width, publishedCloud->height);
 	pub.publish(publishedCloud);
 	//viewer.showCloud(myCloud);
 	publishedCloud->clear();
+	stop = clock();
+	float time =((float)stop-(float)start)/1000.0f;
+	std::cout << "Time elapsed: " << time  << "\n";
 
 }
 
@@ -151,9 +160,9 @@ int main (int argc, char** argv)
 	cy = camInfo.P.elems[6];
 
 	// Initialize ROS and openCV windows
-	//cv::namedWindow("Frame");
-	//cv::namedWindow("Background");
-	//cv::namedWindow("Foreground");
+	cv::namedWindow("Frame");
+	cv::namedWindow("Background");
+	cv::namedWindow("Foreground");
 	ros::init (argc, argv, "background_modelling");
 	ros::NodeHandle nh;
 	bg = new cv::BackgroundSubtractorMOG2(10000, 16.0f, false);
