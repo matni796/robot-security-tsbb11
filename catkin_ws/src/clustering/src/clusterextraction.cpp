@@ -113,12 +113,14 @@ void downsample(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc,
 		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered){
 	pcl::VoxelGrid<pcl::PointXYZ> vg;
 	vg.setInputCloud(pc);
-	vg.setLeafSize(0.01f, 0.01f, 0.01f);
+	vg.setLeafSize(0.02f, 0.02f, 0.02f);
 	vg.filter(*cloud_filtered);
 }
 
 void clusterExtraction(const sensor_msgs::PointCloud2ConstPtr& input)
 {
+	clock_t start, stop;  	
+  	start=clock();
 	ROS_INFO("Received Point Cloud: %dx%d", input->height, input->width);
 	//ROS_INFO("Received Point Cloud: %d.", input.height);
 	boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc(new pcl::PointCloud<pcl::PointXYZ>());
@@ -132,6 +134,9 @@ void clusterExtraction(const sensor_msgs::PointCloud2ConstPtr& input)
 	if(cloud_filtered->height != 0 && cloud_filtered->width != 0){
 	pcl::removeNaNFromPointCloud(*cloud_filtered,*cloud_filtered,indices);
 	euclidianClustering(cloud_filtered);
+	stop=clock();
+	float time =((float)stop-(float)start)/1000.0f;
+	std::cout << "Time elapsed: " << time  << "\n";
 	}
 }
 
