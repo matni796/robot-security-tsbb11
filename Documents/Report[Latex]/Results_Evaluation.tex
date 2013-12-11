@@ -17,3 +17,32 @@ In this type of project there is no typical solution which final results can be 
 
 
 8. Multiple persons enters the scene acting like a herd of sheeps (moving randomly without knowledge about the robot). The persons should once in a while enter security zones. This test makes it possible to count the number of correct classifications and this test more or less correspond to a real life situation. 
+
+\subsection{Performance of system using tracking functionality}
+The tracking algorithm performs very well when a single object is within the collaborating area.
+The tracker stays with the object and holds on to it, even when it is no longer visible in the foreground.\\
+
+A person can enter the area, have its distance to the robot visualized with either a green, yellow or red marker.
+The marker is illustrated in form of a cylinder between the robot and the object.
+The marker might switch between two joint that are approximately on the same distance or between the knees of a person.\\
+
+When two or more objects are within the collaborating area the system gets choppy.
+The current computer does not manage to process all data in real time and this produces bugs.
+When two or more objects are within the collaborating area there is a risk that objects move to far between two concurrent frames.
+If a person moves further than what is allowed between two frames the tracker will think that the previous object melted into the background and that a new object has appeared.
+The system updates the collaborating area with a very low frequency and the displacement could therefore be more than what the tracker tolerates.
+The tracker has a maximum length for allowed displacement of an object between two concurrent frames.
+This length could be increased but that would also increase the risk of losing an object between to frames.
+E.g., since the tracker looks for a similar object within this displacement distance it might match one person with his friend in the next frame and the person himself could then be in a state where the person is lost. 
+Since it is not possible for an object to appear out of nowhere within a certain distance.
+
+
+
+\subsection{Performance of system without tracking}
+When tracking is disabled the system makes use of only background subtraction to find objects.
+This enables more than one person to be inside the collaborating area since each object then is independent of its location in the previous frame.\\
+
+The problem one might face using this method is that objects are lost when they melt into the background.
+If an object is within any of the safety zones the system would simply forget it and the robot would operate in normal speed, higher than what is allowed.
+This could be avoided if the system would required that an object would exit each safety mode in correct order!
+The robot would also be possible to hit the object since it has no information of its location.
