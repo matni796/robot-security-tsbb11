@@ -12,22 +12,34 @@ Most of the building blocks of the calibration is implemented by the OpenCV libr
 \subsubsection{Intrinsic calibration}
 Before image distortions the projection of the 3D-world to the image plane is described by this matrix:
 
-\[ \left( \begin{array}{ccc}
-a & b & c \\
-d & e & f \\
-g & h & i \end{array} \right)\] 
+\[\begin{bmatrix}
+x \\
+y \\
+w
+\end{bmatrix}
+=
+\begin{bmatrix}
+ f_x & 0   & c_x \\ 
+ 0   & f_y & c_y \\ 
+ 0   & 0   & 1
+\end{bmatrix}
+\begin{bmatrix}
+X \\
+Y \\
+Z
+\end{bmatrix}\] 
 
-Where $f_x$ and $f_y$ are the number of pixels per unit of length, cx and cy are the center pixel coordinates of the image. X, Y and Z are the camera relative positions of a visible point with x, y and w as the homogeneous representation of the pixel coordinate where the point is projected.
+Where $f_x$ and $f_y$ are the number of pixels per unit of length, $c_x$ and $c_y$ are the center pixel coordinates of the image. X, Y and Z are the camera relative positions of a visible point with x, y and w as the homogeneous representation of the pixel coordinate where the point is projected.
 
 Distortions from this model is modelled as radial distortion as well as tangential distortions. Radial distortions produce a fish-eye effect on the image and is compensated for with this model:
 
-$radial_corrected_x = f(x)$
-$radial_correcced_y = f(y)$
+\[x_{radialcorrected} = x\cdot (1+k_1\cdot r^2 + k_2\cdot r^4 + k_3\cdot r^6)\]
+\[y_{radialcorrected} = y\cdot (1+k_1\cdot r^2 + k_2\cdot r^4 + k_3\cdot r^6)\]
 
 Tangential distortions due to the lense not being perfectly aligned is compensated with this model:
 
-$tangential_corrected_x = g(x)$
-$tangential_corrected_y = g(y)$
+\[x_{tangentialcorrected} = x + 2p_1xy+p_2(r^2+2x^2)\]
+\[y_{tangentialcorrected} = x + p_1(r^2+2y^2)+2p_1xy\]
 
 Since this is a standard model external libraries have support for these parameters and the error correction from calculating the distortion parameters will cascade into other functions. Intrinsic and distortion calibration is done offline and the parameters are saved into a YAML file.
 
