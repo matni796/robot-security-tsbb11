@@ -66,4 +66,6 @@ The tf subsystem is a built in part of ROS for managing transformations between 
 Since information regarding the design of the robot is provided the transformations between the joints can be obtained. The tf package then makes it possible to transform the robot and its joints into a given coordinate system.
 
 \subsubsection{Transformation into camera coordinate system}
-A static transformation between calibration pattern and the base of the robot in world coordinates is set. Given the transformation from camera to calibration pattern, it is possible to transform each joint to the camera coordinate system. This results in a set of joints on which the distance calculation to moving objects in the scene can be performed. 
+A static transformation between calibration pattern and the base of the robot is set. 
+The transformations is done in the coordinate system defined by the chessboard corners.
+Given the transformation from camera to calibration pattern, it is possible to transform each joint to the camera coordinate system. This results in a set of joints on which the distance calculation to moving objects in the scene can be performed. 
