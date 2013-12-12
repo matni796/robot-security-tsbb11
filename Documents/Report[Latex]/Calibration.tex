@@ -54,8 +54,11 @@ To prevent the optimization getting stuck in local optima the optimization is do
 
 The solution is then further median filtered on one of the rotation parameters to prevent outliers. Though running the system has so far yet to produce an outlier after the previous errors these median filtered points could in the future be averaged to further increase precision if the system demands it.
 
+\subsubsection{tf}
+The tf subsystem is a built in part of ROS for managing transformations between different coordinate systems. It is written and maintained by Tully Foote. The tf package takes the different transformations of the system as input. Using them it can then provide the position of a point in an arbitrary coordinate system at any point in time.
+
 \subsubsection{Transformation of robot joints}
-While running warehouse\_viewer the the transformations between the joints can be obtain given the relation of the joints specified in the robot’s URDF file, see appendix. The tf package included in ROS makes it possible to transform the robot and its joints into a given coordinate system, provided by the RGB camera.
+Since information regarding the design of the robot is provided the transformations between the joints can be obtained. The tf package then makes it possible to transform the robot and its joints into a given coordinate system.
 
 \subsubsection{Transformation into camera coordinate system}
-A static transformation between calibration pattern and the base of the robot in world coordinates is set. Given the transformation from camera to world coordinates it is possible to transform each joint to the camera coordinate system. This results in a set of joints on which the distance calculation to moving objects in the scene can be performed. 
+A static transformation between calibration pattern and the base of the robot in world coordinates is set. Given the transformation from camera to calibration pattern, it is possible to transform each joint to the camera coordinate system. This results in a set of joints on which the distance calculation to moving objects in the scene can be performed. 
