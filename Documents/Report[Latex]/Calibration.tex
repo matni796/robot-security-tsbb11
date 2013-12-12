@@ -1,11 +1,11 @@
 % Calibration between coordinate systems.
 
 \subsection{Calibration}
-To relate the camera system to the world system the system has to be calibrated. For calibration of the camera intrinsic parameters and distortions from the pinhole camera model the system uses the models and methodology described by Zhang, 2000 \cite{zhang}. This is performed offline.
+To relate the camera system to the world system defined by a fixed point in a calibration pattern the system has to be calibrated. For calibration of the camera intrinsic parameters and distortions from the pinhole camera model the system uses the models and methodology described by Zhang, 2000 \cite{zhang}. This is performed offline.
 
-For online calibration of the camera extrinsics the same distortion parameters are used with a world fixed calibration pattern.
+For online calibration of the camera extrinsics the same distortion and intrinsic parameters are used with a world fixed calibration pattern.
 
-The online calibration is very computationally expensive however since the system is supposed to be stationary, recalibration is only done once a second to compensate for small adjustments on the system.
+The online calibration is very computationally expensive however since the system is supposed to be stationary, recalibration is only done once a second to compensate for small adjustments on the system. The possibility for the camera to move still exists and if so the system would be maladjusted and give out wrong answers which is why the online calibration is performed.
 
 Most of the building blocks of the calibration is implemented by the OpenCV library \cite{camcal}. 
 

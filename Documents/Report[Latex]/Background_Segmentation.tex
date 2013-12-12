@@ -13,13 +13,13 @@ The background segmentation node is based on the backgroundSubtractorMOG2 from O
 \end{figure}
 
 
-The foreground and depth image are used to construct a point cloud. For each foreground pixel the corresponding depth value $P_z$, pixel coordinates $p_x$, $p_y$ and intrinsic parameter can be used to obtain the world coordinates as follows.
+The foreground and depth image are used to construct a point cloud. For each foreground pixel the corresponding depth value $Z$, pixel coordinates $x$, $y$ and intrinsic parameter can be used to obtain the world coordinates as follows.
 
 \begin{center}
-$\displaystyle P_x = (p_x - c_x) \cdot \frac{P_z}{f_x}$\\ \vspace{10 pt}
-$\displaystyle P_y = (p_y - c_y) \cdot \frac{P_z}{f_y}$
+$\displaystyle X = (x - c_x) \cdot \frac{Z}{f_x}$\\ \vspace{10 pt}
+$\displaystyle Y = (y - c_y) \cdot \frac{Z}{f_y}$
 
-and the 3D point is ${\bf P} = [P_x, P_y, P_z]^T$
+and the 3D point is ${\bf P} = [X, Y, Z]^T$
 \end{center}
 
 

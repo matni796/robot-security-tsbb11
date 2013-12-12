@@ -14,12 +14,12 @@ The data published by the controller in JOINT\_STATES are the radial position of
 \end{figure}
 
 \subsubsection{Objects}
-The objects in the image that the tracking algorithm considers being real moving objects are visualized. They are published as point clouds so that rviz can subscribe to them and visualize them. If the tracking algorithm believes that an object has disappeared because of non-movement, it publishes the last seen point cloud of the object i.e. static objects in the scene are objects that the system thinks are standing still. 
+The objects in the image that the tracking algorithm considers being real moving objects are visualized. They are published as point clouds so that Rviz can subscribe to them and visualize them. If the tracking algorithm believes that an object has disappeared because of non-movement, it keeps the last seen point cloud of the object i.e. static objects in the scene are objects that the system thinks are standing still. 
 
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=12 cm]{humanandrobot}
-\caption{Human beside the robot.}
+\caption{Clustered object beside the robot.}
 
 \end{center}
 \end{figure}
@@ -27,7 +27,7 @@ The objects in the image that the tracking algorithm considers being real moving
 \begin{figure}[H]
 \begin{center}
 \includegraphics[width=12 cm]{humanandrobotinworld2}
-\caption{Humans and robot placed in world coordinate system.}
+\caption{Clustered objects and robot placed in world coordinate system.}
 
 \end{center}
 \end{figure}  
