@@ -50,9 +50,14 @@ This calibration pattern is then detected in the image and the solution to the P
 
 To minimize noise and increase robustness a large chessboard pattern with 6x8 known points is used for calibration. However there is no known analytical solutions to the PnP problem for n > 3 so the problem is solved using optimization (minimization of the sum of squared reprojection errors) with the Levenberg-Marquardt iterative optimization algorithm.
 
-To prevent the optimization getting stuck in local optima the optimization is done on an analytical solution to the P3P problem. The points used for the analytical solution are the four corners of the chessboard, three to solve the P3P problem and one to validate which of the four possible solutions is consistent with the rest of the data.
+To prevent the optimization getting stuck on local optima the system uses initial solutions provided by the P3P solver.
+The points used for these initial solution are the four corners of the chessboard, three to solve the P3P problem and one to validate which of the four possible solutions is consistent with the rest of the data.
+The P3P solver used in OpenCV provides an unknown number of solutions since the algorithm does not handle all possible cases. 
 
-The solution is then further median filtered on one of the rotation parameters to prevent outliers. Though running the system has so far yet to produce an outlier after the previous errors these median filtered points could in the future be averaged to further increase precision if the system demands it.
+The PnP solver then uses these initial solutions to find the optimal solution.
+To verify that the provided solution is correct the system checks that the x-axis in the found coordinate system is flipped compared to the x-axis specified by the camera.
+This is necessary due to the problem of unknown numbers of solutions from the P3P solver.
+
 
 \subsubsection{tf}
 The tf subsystem is a built in part of ROS for managing transformations between different coordinate systems. It is written and maintained by Tully Foote. The tf package takes the different transformations of the system as input. Using them it can then provide the position of a point in an arbitrary coordinate system at any point in time.
