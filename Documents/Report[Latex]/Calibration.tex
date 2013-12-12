@@ -3,9 +3,9 @@
 \subsection{Calibration}
 To relate the camera system to the world system defined by a fixed point in a calibration pattern the system has to be calibrated. For calibration of the camera intrinsic parameters and distortions from the pinhole camera model the system uses the models and methodology described by Zhang, 2000 \cite{zhang}. This is performed offline.
 
-For online calibration of the camera extrinsics the same distortion and intrinsic parameters are used with a world fixed calibration pattern.
+To find where the camera is positioned camera extrinsic parameters will also have to be found. This is solved with online calibration of the camera using the same distortion and intrinsic parameters when trying to find a world fixed calibration pattern.
 
-The online calibration is very computationally expensive however since the system is supposed to be stationary, recalibration is only done once a second to compensate for small adjustments on the system. The possibility for the camera to move still exists and if so the system would be maladjusted and give out wrong answers which is why the online calibration is performed.
+The online calibration is very computationally expensive, however since the system is supposed to be stationary, recalibration is only done once a second to compensate for small adjustments on the system. The possibility for the camera to move still exists and if so the system would be maladjusted and give out wrong answers which is why the online calibration is performed.
 
 Most of the building blocks of the calibration is implemented by the OpenCV library \cite{camcal}. 
 
@@ -31,17 +31,17 @@ Z
 
 Where $f_x$ and $f_y$ are the number of pixels per unit of length, $c_x$ and $c_y$ are the center pixel coordinates of the image. X, Y and Z are the camera relative positions of a visible point with x, y and w as the homogeneous representation of the pixel coordinate where the point is projected.
 
-Distortions from this model is modelled as radial distortion as well as tangential distortions. Radial distortions produce a fish-eye effect on the image and is compensated for with this model:
+Lens distortions from this model is modelled as radial distortion as well as tangential distortions. Radial distortions produce a fish-eye or barrel effect on the image and is compensated for with this model:
 
 \[x_{radialcorrected} = x\cdot (1+k_1\cdot r^2 + k_2\cdot r^4 + k_3\cdot r^6)\]
 \[y_{radialcorrected} = y\cdot (1+k_1\cdot r^2 + k_2\cdot r^4 + k_3\cdot r^6)\]
 
-Tangential distortions due to the lense not being perfectly aligned is compensated with this model:
+Tangential distortions due to the lens not being perfectly aligned is compensated with this model:
 
 \[x_{tangentialcorrected} = x + 2p_1xy+p_2(r^2+2x^2)\]
 \[y_{tangentialcorrected} = x + p_1(r^2+2y^2)+2p_1xy\]
 
-Since this is a standard model external libraries have support for these parameters and the error correction from calculating the distortion parameters will cascade into other functions. Intrinsic and distortion calibration is done offline and the parameters are saved into a YAML file.
+Since this is a standard model external libraries have support for these parameters and the distortion factors can improve calculations in other functions too. Intrinsic and distortion calibration is done offline and the parameters are saved into a YAML file.
 
 \subsubsection{Extrinsic calibration}
 To relate the position and state of the robot to the camera there needs to be a reference between a fixed robot frame and the camera frame. To solve this a calibration pattern is placed at a known position relative to the robot.
