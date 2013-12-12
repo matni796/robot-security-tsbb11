@@ -29,14 +29,14 @@ Consequently the tracking algorithm seems to work very good for the evaluation o
 For scenario 5 the tracking will not register the objects left by the person since it is not possible for objects to appear inside the safety zones. However, if the object is too big there is a chance that the system will start to track the object instead of the person. 
 
 When two or more objects are within the collaborating area the system gets choppy.
-The current computer does not manage to process all data in real time and this produces bugs.
+The current computer does not manage to process all data in real time and this produces negative artifacts.
 When two or more objects are within the collaborating area there is a risk that objects move too far between two concurrent frames.
 If a person moves further than what is allowed between two frames the tracker will think that the previous object melted into the background and that a new object has appeared.
 The system updates the collaborating area with a very low frequency and the displacement could therefore be more than what the tracker tolerates.
 The tracker has a maximum length for allowed displacement of an object between two concurrent frames.
 This length could be increased but that would also increase the risk of losing an object between to frames.
 E.g., since the tracker looks for a similar object within this displacement distance it might match one person with his friend in the next frame and the person himself could then be in a state where the person is lost. 
-Since it is not possible for an object to appear out of nowhere within a certain distance.\\
+This is because it is not possible for an object to appear out of nowhere within a certain distance.\\
 
 Since the tracking starts to fail when there are too many objects in the scene it is difficult to make any conclusions from the evaluation of scenario 3,4,6,7 and 8.
 
