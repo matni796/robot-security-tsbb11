@@ -3,7 +3,10 @@
 The results of the system is visualized in rviz, which is a 3D visualization tool for ROS. 
 
 \subsubsection{Robot}
-The data published by the controller in JOINT\_STATES are the radial position of the joints. The warehouse\_viewer will use these states transformed into the coor The URDF file specifies the links between the robot’s joints and the mesh files (.stl) and tf will contain the transformations between the joints which are used in warehouse\_viewer to create 3D model of the robot. 
+The data received from the controller are the joint states.
+The visualizer, RViz, uses these states when determining the robots pose.
+The robots construction is predefined and RViz only requires the joint states to draw the robot.
+The length between the nodes and its appearance was provided by developer, in mesh format.
 
 \begin{figure}[H]
 \begin{center}

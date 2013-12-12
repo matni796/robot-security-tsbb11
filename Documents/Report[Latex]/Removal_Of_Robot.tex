@@ -1,9 +1,23 @@
 \subsection{Removal of Robot}
 
-In the background segmentation the system finds everything that is classified as foreground, including the robot. This results in a point cloud that might contain values corresponding to the robot. The purpose of this project is to check if detected objects are within a certain distance from the robot. If the robot itself is one of the objects the distance will always be minimal and the system will not work. This means that the system needs to remove clusters corresponding to the robot from the other clusters before it can calculate distances and make a decision. 
+In the background segmentation the system finds everything that is classified as foreground, including the robot.
+This results in a point cloud that might contain values corresponding to the robot. 
+%%The purpose of this project is to check if detected objects are within a certain distance from the robot.
+%%If the robot itself is one of the objects the distance will always be minimal and the system will not work.
+This means that the system needs to remove clusters corresponding to the robot from the other clusters before it can calculate distances and make a decision.
 
-Removing the clusters corresponding to the robot is done by using the joint coordinates of the robot. Since the system only knows the joints position and not the entire hull of the robot the first thing that needs to be done is to create a convex hull corresponding to an approximation of the real hull of the robot. The approximated hull is achieved by creating lines between connected joints and applying a cylinder around these lines. The radius of the cylinder is given by the greatest radius of the robot between these joints. In other words the cylinders corresponding to the hull of the robot will cover up the whole robot. After the hull is created a simple check is performed which finds out if a certain amount of the points in a cluster are inside any of these cylinders. If this is the case these clusters are excluded for further processing. It is not trivial to know if a point is inside a cylinder, the used method is based on the algorithm written by Greg James. \cite{cylinder} The pseudo code for the algorithm is described below.
+Removing the clusters corresponding to the robot is done by using the joint states of the robot.
+Since the system only knows the joints position and not the entire hull of the robot the first thing that needs to be done is to create a convex hull corresponding to an approximation of the real hull of the robot.
+The approximated hull is achieved by creating lines between connected joints and applying a cylinder around these lines.
+The radius of the cylinder is given by the greatest radius of the robot between these joints. 
+In other words the cylinders corresponding to the hull of the robot will cover up the whole robot.
 
+After the hull is created a simple check is performed which finds out if a certain amount of the points in a cluster are inside any of these cylinders.
+If this is the case these clusters are excluded for further processing.
+It is not trivial to know if a point is inside a cylinder, the used method is based on the algorithm written by Greg James. \cite{cylinder} The pseudo code for the algorithm is described below.
+
+% The figure and formulas are commented out. Due to request from Johan. // PL
+\begin{comment}
 
 \begin{figure}[H]
 \centering
@@ -67,3 +81,5 @@ $\displaystyle d^2 = \|{\bf v}\|^2 - \|{\bf v_1}\|^2= {\bf v}^T{\bf v} -\frac{({
 \end{enumerate}
 
 This procedure is carried out for all points in each cluster for all cylinders spanning the robot. The number of points inside a cylinder for each cluster is used to determine if the cluster corresponds to the robot. If the number is above a certain threshold, i.e. 80\% the cluster is classified as the robot and discarded.
+
+\end{comment}
