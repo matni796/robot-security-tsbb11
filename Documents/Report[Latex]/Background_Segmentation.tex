@@ -1,8 +1,7 @@
 
 \subsection{Background segmentation}
 
-
-The background segmentation node is based on the backgroundSubtractorMOG2 from OpenCV \cite{BGS} which uses Gaussian mixtures to perform the segmentation. The background segmentation results in a binary image of the foreground. 
+The background segmentation node is based on the backgroundSubtractorMOG2 from OpenCV \cite{BGS} which uses Gaussian mixtures to perform the segmentation. The background segmentation results in a binary image of the foreground. The background modeling uses statistical properties by model each pixel as a mixture of gaussian. A pixel is counted as foreground when it deviates from these gaussians. Checking each pixel in the fram gives out the entire foreground. The background model updates for each frame processed which means it is computationally expensive. 
 
 \begin{figure}[H]
 \begin{center}
