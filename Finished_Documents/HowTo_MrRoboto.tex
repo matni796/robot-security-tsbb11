@@ -6,6 +6,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{float}
 \usepackage[none]{hyphenat}
+\usepackage{hyperref} % göra länkar
 
 \begin{document}
 
@@ -17,7 +18,7 @@
 
 \begin{enumerate}
 \item Install ubuntu 12.04 on your computer.
-\item Install ROS GROOVY according to: \textit{http://wiki.ros.org/groovy/Installation/Ubuntu}
+\item Install ROS GROOVY according to: \url{http://wiki.ros.org/groovy/Installation/Ubuntu}
 \item Install git, type:\\
 \textit{
 \$ sudo apt-get install git} (in a terminal window)\\
@@ -26,7 +27,7 @@ Password is \textit{ubuntu} for the computer in the robot lab.
 cd* into a folder where you want the folder containing the code.
 Type:\\
 \textit{\$ git clone git@github.com:matni796/robot-security-tsbb11}\\
-(*cd is a terminal command. If your not familiar with navigation in terminal, see \textit{http://linuxcommand.org/lc3\_lts0020.php})
+(*cd is a terminal command. If your not familiar with navigation in terminal, see \url{http://linuxcommand.org/lc3\_lts0020.php})
 
 \item Source your own created packages in .bashrc:
 	type: gedit ~/.bashrc
@@ -39,7 +40,7 @@ source \textit{wherever\_path\_you\_put\_repository/robot\-security\-tsbb11/catk
 \$ sudo apt-get install ros-groovy-freenect-launch
 }
 \item Disable gspca kernel according to:
-	\textit{http://openkinect.org/wiki/Getting\_Started}
+	\url{http://openkinect.org/wiki/Getting\_Started}
 
 
 \item cd into the installed folder and into catkin\_ws and type catkin\_make to build.
@@ -56,7 +57,8 @@ source \textit{wherever\_path\_you\_put\_repository/robot\-security\-tsbb11/catk
 The file ALL.PRM can be found in git repo, under the folder robot/. Transfer it to a cf card or usb.
 Start the controller regularly.
 Go into management mode (see below).
-Then go to EX MEMORY $\rightarrow$ FOLDER, set folder where you put ALL.PRM.
+Then go to:\\\\
+ EX MEMORY $\rightarrow$ FOLDER, set folder where you put ALL.PRM.\\\\
 EX MEMORY $\rightarrow$ LOAD $\rightarrow$ PARAMETERS $\rightarrow$ BATCH PARAMETERS ALL.PRM
 
 You might need to do a safety reset of the flash device. 
@@ -70,20 +72,20 @@ NOTE: Might change the setup of the controller. Should be done with caution. Con
 Yaskawa if uncertain.
  
 
-\item To install MotoPlus application, follow the tutorial on \textit{http://wiki.ros.org/motoman\_driver/Tutorials/InstallServer.}
+\item To install MotoPlus application, follow the tutorial on \url{http://wiki.ros.org/motoman\_driver/Tutorials/InstallServer.}
 \begin{itemize}
 
 \item For step 3 in tutorial, see PDF file \textit{MotoPlus Application Installation} in folder \textit{robot/}. 
 Follow the instructions on step 2.1. 
-The application file to be loaded is also in the in the \textit{robot/} folder.\\
+The application file: \textit{MpRosSia20.out} to be loaded is also in the in the \textit{robot/} folder.\\
 
 NOTE: We have used an .out file hardcoded for a SIA20D robot. This version does not come with the motoman files from ROS.\\
 
 
 \item For step 4 in tutorial, transfer \textit{INIT\_ROS.JBI} to CF card or USB device. 
 File can be found under \textit{../catkin\_ws/src/motoman/motoman\_driver/Inform/DX100/}. 
-Start the controller regularly. In menu, go to: 
-Ex MEMORY $\rightarrow$ FOLDER move to the folder where you put \textit{INIT\_ROS.JBI} file. Then:
+Start the controller regularly. In menu, go to: \\\\
+Ex MEMORY $\rightarrow$ FOLDER move to the folder where you put \textit{INIT\_ROS.JBI} file. Then:\\\\
 Ex Memory $\rightarrow$ LOAD $\rightarrow$ job.
 \end{itemize}
 
@@ -103,7 +105,7 @@ NOTE: On the computer, running Ubuntu 12.04, in the robot lab, there is a profil
 
 \subsection{Run program/Use of interface between controller and computer.}
 Källskript bör ordnas.\\
-Follow the instructions on \textit{http://wiki.ros.org/motoman\_driver/Tutorials/Usage}.
+Follow the instructions on \url{http://wiki.ros.org/motoman\_driver/Tutorials/Usage}.
 \begin{itemize}
 
 
