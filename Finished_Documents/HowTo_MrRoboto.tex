@@ -34,6 +34,9 @@ Type:\\
 add the line:
 source \textit{wherever\_path\_you\_put\_repository/robot\-security\-tsbb11/catkin\_ws/src/devel/setup.bash}
 
+\item Install ROS, type: \\
+\textit{\$ sudo apt-get install ros-groovy-desktop-full}
+
 \item Install freenect, type: \\
 \textit{
 \$ sudo apt-get install ros-groovy-freenect-stack\\
@@ -64,7 +67,7 @@ EX MEMORY $\rightarrow$ LOAD $\rightarrow$ PARAMETERS $\rightarrow$ BATCH PARAME
 You might need to do a safety reset of the flash device. 
 This is done by starting up the controller in Maintenance mode.   
 In Maintenance Mode, enter Management mode.
-INITIALIZE $\rightarrow$ system flash safety reset, might take a while, wait for beep (CHECK NAME). 
+INITIALIZE $\rightarrow$ system flash safety reset, might take a while, wait for beep.
 Shut off controller and restart it regularly.
 
 
@@ -80,7 +83,6 @@ Follow the instructions on step 2.1.
 The application file: \textit{MpRosSia20.out} to be loaded is also in the in the \textit{robot/} folder.\\
 
 NOTE: We have used an .out file hardcoded for a SIA20D robot. This version does not come with the motoman files from ROS.\\
-
 
 \item For step 4 in tutorial, transfer \textit{INIT\_ROS.JBI} to CF card or USB device. 
 File can be found under \textit{../catkin\_ws/src/motoman/motoman\_driver/Inform/DX100/}. 
@@ -103,7 +105,9 @@ Ex Memory $\rightarrow$ LOAD $\rightarrow$ job.
 NOTE: On the computer, running Ubuntu 12.04, in the robot lab, there is a profile for the connection named “DX100”. When connecting the controller to the computer via ethernet, choose this.
 \end{enumerate}
 
-\subsection{Run program/Use of interface between controller and computer.}
+\subsection{Run program}
+When the setup is done follow these instructions to run the system.
+\subsubsection{Establish connection between controller and computer}
 Källskript bör ordnas.\\
 Follow the instructions on \url{http://wiki.ros.org/motoman\_driver/Tutorials/Usage}.
 \begin{itemize}
@@ -113,13 +117,34 @@ Follow the instructions on \url{http://wiki.ros.org/motoman\_driver/Tutorials/Us
 
 \item  On step 3.1.2.1, use the path \textit{..catkin\_ws/src/motoman/motoman\_config/cfg/sia20D\_mesh.xml}
 
-\item To obtain visualization, type:\\ 
-\textit{\$ roslaunch sia20d\_mesh\_arm\_navigation planning\_scene\_warehouse\_viewer\_sia20d\_mesh.launch}
-
 \item Choose the correct frame, baselink something...
 
 \item vad mer behöver man köra. kan vi skriva ett källskript som sköter ovanstående.
 \end{itemize}
+
+
+\subsection{Launch system}
+While still running \textit{roscore} and the robot node. Run the following comands, each in a seperate terminal window.
+\begin{itemize}
+\item \textit{\$ roslaunch freenect\_launch freenect.launch}
+
+\item \textit{\$ rosrun background\_modelling background\_modelling}
+
+\item \textit{\$ rosrun clustering clustering}
+
+\item \textit{\$ rosrun calibration calibration}
+
+\item \textit{\$ rosrun distance\_calc distance\_calc}
+
+\item To obtain visualization, type:\\
+\textit{\$ roslaunch sia20d\_mesh\_arm\_navigation planning\_scene\_warehouse\_viewer\_sia20d\_mesh.launch}
+
+\item In oder to set the static transform between the calibration pattern and the robot base type:\\
+ \textit{\$ rosrun tf static\_transform\_publisher x y z yaw pitch roll base\_link pattern 100}
+ 
+where x, y, z and yaw, pitch, roll has to be specified. With the setup in our project they were: $\left[0, 0, 0, \pi, \pi, \pi \right].$ This might need to be tweaked to get a good calibration.
+\end{itemize}
+
 
 
 
