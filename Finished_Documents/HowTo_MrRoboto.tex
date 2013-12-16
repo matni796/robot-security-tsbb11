@@ -13,7 +13,7 @@
 \section*{MrRoboto}
 
 \section{How to setup system}
-
+If you're using the robot lab's computer skip to \ref{setup}.
 \subsection{Initial computer settings}
 
 \begin{enumerate}
@@ -42,6 +42,10 @@ source \textit{wherever\_path\_you\_put\_repository/robot\-security\-tsbb11/catk
 \$ sudo apt-get install ros-groovy-freenect-stack\\
 \$ sudo apt-get install ros-groovy-freenect-launch
 }
+
+\item Install arm navigation (used for visualization)\\
+\textit{\$ sudo apt-get install ros-groovy-arm-navigation-experimental}
+
 \item Disable gspca kernel according to:
 	\url{http://openkinect.org/wiki/Getting\_Started}
 
@@ -95,7 +99,7 @@ Ex Memory $\rightarrow$ LOAD $\rightarrow$ job.
 \end{enumerate}
 
 \subsection{Setup of computer network settings}
-
+\label{setup}
 \begin{enumerate}
 
 \item Connect the computer to the controller via ethernet cable. Use the output CN104 on the YCP01 board.
@@ -108,13 +112,13 @@ NOTE: On the computer, running Ubuntu 12.04, in the robot lab, there is a profil
 \section{Run program}
 When the setup is done follow these instructions to run the system.
 \subsection{Establish connection between controller and computer}
-Follow the instructions on \url{http://wiki.ros.org/motoman\_driver/Tutorials/Usage}.
+The complete instructions for establishing a connection with the controller can be found at: \url{http://wiki.ros.org/motoman\_driver/Tutorials/Usage}. Run the following in a separate terminal. Hint: \textit{Ctrl + Shift + T} opens a new tab.
 \begin{itemize}
+\item \textit{\$ roscore}
+\item \textit{\$ rosparam load ...catkin\_ws/src/motoman/motoman\_config/cfg/sia20D\_mesh.xml robot\_description}
 
+\item \textit{\$ roslaunch motoman\_driver robot\_interface\_streaming\_dx100.launch robot\_ip:=192.168.255.1}
 
-\item On step 3, enter the controller IP \textbf{192.168.255.1}.
-
-\item  On step 3.1.2.1, use the path \textit{..catkin\_ws/src/motoman/motoman\_config/cfg/sia20D\_mesh.xml}\\
 \end{itemize}
 NOTE: Currently it is not possible to send motion commands to the robot.
 This is due to developers lack of implementation skills.
@@ -141,10 +145,10 @@ where x, y, z and yaw, pitch, roll has to be specified. With the setup in our pr
 
 \item To obtain visualization, type:\\
 \textit{\$ roslaunch sia20d\_mesh\_arm\_navigation planning\_scene\_warehouse\_viewer\_sia20d\_mesh.launch}
-This should launch the visualisation environment RViz.
+This will launch the visualisation environment RViz.
 
 \end{itemize}
-NOTE: In each terminal there will be data printed about that function current state.
+NOTE: In each terminal there will be data printed about that function's current state.
 
 \subsection{Visualization}
 RViz provides a wide range of possibilities for visualization.
@@ -156,6 +160,15 @@ To begin with there are some fundamental settings that always needs to be perfor
 \item Add a PointCloud2 and choose /objects as Topic.
 
 \item For one of the Markers choose the Topic /closest\_line
+
+\item Add a camera
+\begin{itemize}
+\item Choose an image topic, preferably mono 
+\item Set "overlay alpha" to 1
+\item Set queue size to 1
+\item Choose an appropriate image rendering.\\
+Note: The camera matrix used for visualization is the default. The backprojection will not coincide perfectly with the image
+\end{itemize} 
 \end{itemize}
 
 
