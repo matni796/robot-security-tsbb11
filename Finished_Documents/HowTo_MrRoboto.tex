@@ -105,26 +105,24 @@ Ex Memory $\rightarrow$ LOAD $\rightarrow$ job.
 NOTE: On the computer, running Ubuntu 12.04, in the robot lab, there is a profile for the connection named “DX100”. When connecting the controller to the computer via ethernet, choose this.
 \end{enumerate}
 
-\subsection{Run program}
+\section{Run program}
 When the setup is done follow these instructions to run the system.
-\subsubsection{Establish connection between controller and computer}
-Källskript bör ordnas.\\
+\subsection{Establish connection between controller and computer}
 Follow the instructions on \url{http://wiki.ros.org/motoman\_driver/Tutorials/Usage}.
 \begin{itemize}
 
 
 \item On step 3, enter the controller IP \textbf{192.168.255.1}.
 
-\item  On step 3.1.2.1, use the path \textit{..catkin\_ws/src/motoman/motoman\_config/cfg/sia20D\_mesh.xml}
-
-\item Choose the correct frame, baselink something...
-
-\item vad mer behöver man köra. kan vi skriva ett källskript som sköter ovanstående.
+\item  On step 3.1.2.1, use the path \textit{..catkin\_ws/src/motoman/motoman\_config/cfg/sia20D\_mesh.xml}\\
 \end{itemize}
+NOTE: Currently it is not possible to send motion commands to the robot.
+This is due to developers lack of implementation skills.
 
 
 \subsection{Launch system}
-While still running \textit{roscore} and the robot node. Run the following comands, each in a seperate terminal window.
+While still running \textit{roscore} and the robot node. Run the following comands, each in a seperate terminal.
+Use \textit{Ctrl+Shift+T} to add a tab to existing terminal window.
 \begin{itemize}
 \item \textit{\$ roslaunch freenect\_launch freenect.launch}
 
@@ -136,17 +134,29 @@ While still running \textit{roscore} and the robot node. Run the following coman
 
 \item \textit{\$ rosrun distance\_calc distance\_calc}
 
-\item To obtain visualization, type:\\
-\textit{\$ roslaunch sia20d\_mesh\_arm\_navigation planning\_scene\_warehouse\_viewer\_sia20d\_mesh.launch}
-
-\item In oder to set the static transform between the calibration pattern and the robot base type:\\
+\item In order to set the static transform between the calibration pattern and the robot base. In terminal, type:\\
  \textit{\$ rosrun tf static\_transform\_publisher x y z yaw pitch roll base\_link pattern 100}
  
 where x, y, z and yaw, pitch, roll has to be specified. With the setup in our project they were: $\left[0, 0, 0, \pi, \pi, \pi \right].$ This might need to be tweaked to get a good calibration.
+
+\item To obtain visualization, type:\\
+\textit{\$ roslaunch sia20d\_mesh\_arm\_navigation planning\_scene\_warehouse\_viewer\_sia20d\_mesh.launch}
+This should launch the visualisation environment RViz.
+
 \end{itemize}
+NOTE: In each terminal there will be data printed about that function current state.
 
+\subsection{Visualization}
+RViz provides a wide range of possibilities for visualization.
+To begin with there are some fundamental settings that always needs to be performed.
+\begin{itemize}
 
+\item Under Global Options, choose /base\_link as Fixed Frame.
 
+\item Add a PointCloud2 and choose /objects as Topic.
+
+\item For one of the Markers choose the Topic /closest\_line
+\end{itemize}
 
 
 \end{document}
