@@ -1,48 +1,51 @@
 \section{Results and Evaluation}
-In this type of project there is no typical solution which final results can be evaluated by comparing the results with ground truth values. This is simply because there is no ground truth available for this type of problem. Evaluation of the system must then be done by checking if the system works for all possible scenarios. This type of evaluation is not quite desirable since it will not give a result which can be compared to other implementations of the same or similar problem. However, it will give a good understanding if the system works or not and motivates if the system could be used in real life collaboration areas between robots and humans. The following scenarios have been evaluated:
+In this type of project there is no typical solution which final results can be evaluated by comparing the results with ground truth values. This is simply because there is no ground truth available for this type of problem. Evaluation of the system must then be done by checking if the system works for all possible scenarios. This type of evaluation is not quite desirable since it will not give a result which can be fully compared to other implementations of the same or similar problem. However, it will give a good understanding if the system works or not and motivates if the system could be used in real life collaboration areas between robots and humans. The following scenarios have been evaluated:
 
-1. A person walks in into the scene, enters the outer security zone, stops and then leaves. This is the most trivial test and will show if the system produces any valuable results. This situation should be tested from all directions and the test person should enter all zones. 
+1. A person walks in into the scene, enters the outer safety zone, stops and then leaves. This is the most trivial test and will show if the system produces any valuable results. This situation should be tested from all directions and the test person should enter all zones. 
 
-2.  A person walks in into the scene, enters the outer security zone, stops for a long period of time and then leaves. This situation should be tested from all directions and the test persons should enter all security zones.
+2.  A person walks in into the scene, enters the outer safety zone, stops for a long period of time and then leaves. This situation should be tested from all directions and the test persons should enter all safety zones.
 
-3. Two persons enter the scenes, enters the outer security zone, stops for a short period of time and then leaves. This situation should be tested from all directions and the test persons should enter all security zones. The path of the two persons should not interfere with each other, that is keeping a clear distance from each other. 
+3. Two persons enter the scenes, enters the outer safety zone, stops for a short period of time and then leaves. This situation should be tested from all directions and the test persons should enter all safety zones. The path of the two persons should not interfere with each other, that is keeping a clear distance from each other. 
 
-4. Two persons enter the scenes, enters the outer security zone, stops for a short period of time and then leaves. This situation should be tested from all directions and the test persons should enter all security zones. The path of the two persons should interfere with each other, that is at one point keep a very small distance between each other. 
+4. Two persons enter the scenes, enters the outer safety zone, stops for a short period of time and then leaves. This situation should be tested from all directions and the test persons should enter all safety zones. The path of the two persons should interfere with each other, that is at one point keep a very small distance between each other. 
 
-5. A person enters the scene, enters the outer security zone, stops for a short period of time and then leaves. Before the person leaves it leaves an object behind within the outer security zone. 
+5. A person enters the scene, enters the safety zones, stops for a short period of time and then leaves. Before the person leaves it leaves an object behind within the safety zones. 
 
-6. Two persons enter the scene maintaining physical contact (enough for them to appear as one object in the cluster extraction), enters the outer security zone, terminates the physical contact (the cluster extraction should now extract two objects) and then both leave the scene.
+6. Two persons enter the scene maintaining physical contact (enough for them to appear as one object in the cluster extraction), enters the outer safety zone, terminates the physical contact (the cluster extraction should now extract two objects) and then both leave the scene.
 
-7. Two persons enter the scene maintaining physical contact (enough for them to appear as one object in the cluster extraction), enters the outer security zone, terminates the physical contact (the cluster extraction should now extract two objects) and then one person leaves the scene while the other stays in the outer security zone.
+7. Two persons enter the scene maintaining physical contact (enough for them to appear as one object in the cluster extraction), enters the outer safety zone, terminates the physical contact (the cluster extraction should now extract two objects) and then one person leaves the scene while the other stays in the outer safety zone.
 
-
-8. Multiple persons enters the scene acting like a herd of sheeps (moving randomly without knowledge about the robot). The persons should once in a while enter security zones. This test makes it possible to count the number of correct classifications and this test more or less correspond to a real life situation. 
+8. Multiple persons enters the scene acting like a herd of sheep(moving randomly without knowledge about the robot). The persons should once in a while enter security zones. This test makes it possible to count the number of correct classifications and this test more or less correspond to a real life situation. 
 
 \subsection{Performance of system using tracking functionality}
-The tracking algorithm performs very well when a single object is within the collaborating area.
-The tracker stays with the object and holds on to it, even when it is no longer visible in the foreground.\\
-
 A person can enter the area, have its distance to the robot visualized with either a green, yellow or red marker.
-The marker is illustrated in form of a cylinder between the robot and the object.
-The marker might switch between two joint that are approximately on the same distance or between the knees of a person.\\
+The marker is illustrated in form of a line between the robot and the object.
+The marker might switch between two joint that are approximately on the same distance or between the knees of a person. 
+
+The tracking algorithm performs very well when a single object is within the collaborating area.
+The tracker stays with the object and holds on to it, even when it is no longer visible in the foreground. 
+Consequently the tracking algorithm seems to work very good for the evaluation of scenario 1 and 2.
+
+For scenario 5 the tracking will not register the objects left by the person since it is not possible for objects to appear inside the safety zones. However, if the object is too big there is a chance that the system will start to track the object instead of the person. 
 
 When two or more objects are within the collaborating area the system gets choppy.
-The current computer does not manage to process all data in real time and this produces bugs.
-When two or more objects are within the collaborating area there is a risk that objects move to far between two concurrent frames.
+The current computer does not manage to process all data in real time and this produces negative artifacts.
+When two or more objects are within the collaborating area there is a risk that objects move too far between two concurrent frames.
 If a person moves further than what is allowed between two frames the tracker will think that the previous object melted into the background and that a new object has appeared.
 The system updates the collaborating area with a very low frequency and the displacement could therefore be more than what the tracker tolerates.
 The tracker has a maximum length for allowed displacement of an object between two concurrent frames.
 This length could be increased but that would also increase the risk of losing an object between to frames.
 E.g., since the tracker looks for a similar object within this displacement distance it might match one person with his friend in the next frame and the person himself could then be in a state where the person is lost. 
-Since it is not possible for an object to appear out of nowhere within a certain distance.
+This is because it is not possible for an object to appear out of nowhere within a certain distance.\\
 
-
+Since the tracking starts to fail when there are too many objects in the scene it is difficult to make any conclusions from the evaluation of scenario 3,4,6,7 and 8.
 
 \subsection{Performance of system without tracking}
 When tracking is disabled the system makes use of only background subtraction to find objects.
-This enables more than one person to be inside the collaborating area since each object then is independent of its location in the previous frame.\\
+This enables more than one person to be inside the collaborating area since each object then is independent of its location in the previous frame. Since the background modelling works very good with very little noise this method will work rather good in many cases
 
 The problem one might face using this method is that objects are lost when they melt into the background.
 If an object is within any of the safety zones the system would simply forget it and the robot would operate in normal speed, higher than what is allowed.
 This could be avoided if the system would required that an object would exit each safety mode in correct order!
-The robot would also be possible to hit the object since it has no information of its location.
+
+Using the system without tracking works well in scenario 1,3,4,6,7 and 8. For scenario 2 the system will fail. For scenario 5 the system will detect an object but it will soon starts to disappear.

@@ -1,12 +1,11 @@
 % Input data 
 \subsection{Input Data}
-The different types of input data to the system.
 \subsubsection{Joint states of robot}
-When connection with the controller is established the joint states will be available. Each joint has a value in radians describing its state, i.e. its revolution. The objective is to build a model of the robot in camera coordinates where the distance to a moving object, represented as a point cloud in 3D space can be computed.
-The data regarding joint states is used for both visualization, in shape of a mesh figure, and for calculation of the robot position in relation to other objects. These two are independent with respect to each other.
+When connection with the controller is established the joint states will be available. Each joint has a value in radians describing its state, i.e. its revolution. The objective is to build a model of the robot in camera centered coordinates where the distance to a moving object, represented as a point cloud in 3D space can be computed.
+The data regarding joint states is used for both visualization, in the shape of a mesh figure, and for calculation of the robot's position in relation to other objects. These two are independent with respect to each other.
 
 \subsubsection{Depth-image from Kinect}
-The IR projector and camera provides a depth image of the collaboration area. The data is used for background segmentation and further on for clustering and tracking. Calibration of the IR cameras intrinsic parameters is performed as well. This ensures a correct transformation between world and camera coordinates.
+The IR projector and IR camera provides a depth image of the collaboration area. The data is used for background segmentation and calibration. 
 
 \begin{figure}[H]
 \begin{center}
@@ -17,7 +16,7 @@ The IR projector and camera provides a depth image of the collaboration area. Th
 \end{figure}
 
 \subsubsection{RGB-image from Kinect}
-The RGB camera is used for calibration of both intrinsic and extrinsic camera parameters. From those it is possible to determine a relationship between the robot and a well known positioned calibration pattern used in calibration. 
+The RGB camera is used for calibration of both intrinsic and extrinsic camera parameters. From those it is possible to determine a relationship between the camera and a well known positioned calibration pattern. 
 
 \begin{figure}[H]
 \begin{center}
@@ -26,6 +25,3 @@ The RGB camera is used for calibration of both intrinsic and extrinsic camera pa
 
 \end{center}
 \end{figure}
-
-\subsubsection{tf}
-The tf subsystem is a transformation management system written and maintained by Tully Foote. Since the system will have dozens of frames the tf subsystem traverser the set of known frame relations to give the transformation parameters between two arbitrary reference frames at any point in time. 

@@ -6,6 +6,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{float}
 \usepackage[none]{hyphenat}
+\usepackage{hyperref} % göra länkar
 
 \begin{document}
 
@@ -17,7 +18,7 @@
 
 \begin{enumerate}
 \item Install ubuntu 12.04 on your computer.
-\item Install ROS GROOVY according to: \textit{http://wiki.ros.org/groovy/Installation/Ubuntu}
+\item Install ROS GROOVY according to: \url{http://wiki.ros.org/groovy/Installation/Ubuntu}
 \item Install git, type:\\
 \textit{
 \$ sudo apt-get install git} (in a terminal window)\\
@@ -26,12 +27,15 @@ Password is \textit{ubuntu} for the computer in the robot lab.
 cd* into a folder where you want the folder containing the code.
 Type:\\
 \textit{\$ git clone git@github.com:matni796/robot-security-tsbb11}\\
-(*cd is a terminal command. If your not familiar with navigation in terminal, see \textit{http://linuxcommand.org/lc3\_lts0020.php})
+(*cd is a terminal command. If your not familiar with navigation in terminal, see \url{http://linuxcommand.org/lc3\_lts0020.php})
 
 \item Source your own created packages in .bashrc:
 	type: gedit ~/.bashrc
 add the line:
 source \textit{wherever\_path\_you\_put\_repository/robot\-security\-tsbb11/catkin\_ws/src/devel/setup.bash}
+
+\item Install ROS, type: \\
+\textit{\$ sudo apt-get install ros-groovy-desktop-full}
 
 \item Install freenect, type: \\
 \textit{
@@ -39,7 +43,7 @@ source \textit{wherever\_path\_you\_put\_repository/robot\-security\-tsbb11/catk
 \$ sudo apt-get install ros-groovy-freenect-launch
 }
 \item Disable gspca kernel according to:
-	\textit{http://openkinect.org/wiki/Getting\_Started}
+	\url{http://openkinect.org/wiki/Getting\_Started}
 
 
 \item cd into the installed folder and into catkin\_ws and type catkin\_make to build.
@@ -56,13 +60,14 @@ source \textit{wherever\_path\_you\_put\_repository/robot\-security\-tsbb11/catk
 The file ALL.PRM can be found in git repo, under the folder robot/. Transfer it to a cf card or usb.
 Start the controller regularly.
 Go into management mode (see below).
-Then go to EX MEMORY $\rightarrow$ FOLDER, set folder where you put ALL.PRM.
+Then go to:\\\\
+ EX MEMORY $\rightarrow$ FOLDER, set folder where you put ALL.PRM.\\\\
 EX MEMORY $\rightarrow$ LOAD $\rightarrow$ PARAMETERS $\rightarrow$ BATCH PARAMETERS ALL.PRM
 
 You might need to do a safety reset of the flash device. 
 This is done by starting up the controller in Maintenance mode.   
 In Maintenance Mode, enter Management mode.
-INITIALIZE $\rightarrow$ system flash safety reset, might take a while, wait for beep (CHECK NAME). 
+INITIALIZE $\rightarrow$ system flash safety reset, might take a while, wait for beep.
 Shut off controller and restart it regularly.
 
 
@@ -70,20 +75,19 @@ NOTE: Might change the setup of the controller. Should be done with caution. Con
 Yaskawa if uncertain.
  
 
-\item To install MotoPlus application, follow the tutorial on \textit{http://wiki.ros.org/motoman\_driver/Tutorials/InstallServer.}
+\item To install MotoPlus application, follow the tutorial on \url{http://wiki.ros.org/motoman\_driver/Tutorials/InstallServer.}
 \begin{itemize}
 
 \item For step 3 in tutorial, see PDF file \textit{MotoPlus Application Installation} in folder \textit{robot/}. 
 Follow the instructions on step 2.1. 
-The application file to be loaded is also in the in the \textit{robot/} folder.\\
+The application file: \textit{MpRosSia20.out} to be loaded is also in the in the \textit{robot/} folder.\\
 
 NOTE: We have used an .out file hardcoded for a SIA20D robot. This version does not come with the motoman files from ROS.\\
 
-
 \item For step 4 in tutorial, transfer \textit{INIT\_ROS.JBI} to CF card or USB device. 
 File can be found under \textit{../catkin\_ws/src/motoman/motoman\_driver/Inform/DX100/}. 
-Start the controller regularly. In menu, go to: 
-Ex MEMORY $\rightarrow$ FOLDER move to the folder where you put \textit{INIT\_ROS.JBI} file. Then:
+Start the controller regularly. In menu, go to: \\\\
+Ex MEMORY $\rightarrow$ FOLDER move to the folder where you put \textit{INIT\_ROS.JBI} file. Then:\\\\
 Ex Memory $\rightarrow$ LOAD $\rightarrow$ job.
 \end{itemize}
 
@@ -101,25 +105,58 @@ Ex Memory $\rightarrow$ LOAD $\rightarrow$ job.
 NOTE: On the computer, running Ubuntu 12.04, in the robot lab, there is a profile for the connection named “DX100”. When connecting the controller to the computer via ethernet, choose this.
 \end{enumerate}
 
-\subsection{Run program/Use of interface between controller and computer.}
-Källskript bör ordnas.\\
-Follow the instructions on \textit{http://wiki.ros.org/motoman\_driver/Tutorials/Usage}.
+\section{Run program}
+When the setup is done follow these instructions to run the system.
+\subsection{Establish connection between controller and computer}
+Follow the instructions on \url{http://wiki.ros.org/motoman\_driver/Tutorials/Usage}.
 \begin{itemize}
 
 
 \item On step 3, enter the controller IP \textbf{192.168.255.1}.
 
-\item  On step 3.1.2.1, use the path \textit{..catkin\_ws/src/motoman/motoman\_config/cfg/sia20D\_mesh.xml}
-
-\item To obtain visualization, type:\\ 
-\textit{\$ roslaunch sia20d\_mesh\_arm\_navigation planning\_scene\_warehouse\_viewer\_sia20d\_mesh.launch}
-
-\item Choose the correct frame, baselink something...
-
-\item vad mer behöver man köra. kan vi skriva ett källskript som sköter ovanstående.
+\item  On step 3.1.2.1, use the path \textit{..catkin\_ws/src/motoman/motoman\_config/cfg/sia20D\_mesh.xml}\\
 \end{itemize}
+NOTE: Currently it is not possible to send motion commands to the robot.
+This is due to developers lack of implementation skills.
 
 
+\subsection{Launch system}
+While still running \textit{roscore} and the robot node. Run the following comands, each in a seperate terminal.
+Use \textit{Ctrl+Shift+T} to add a tab to existing terminal window.
+\begin{itemize}
+\item \textit{\$ roslaunch freenect\_launch freenect.launch}
+
+\item \textit{\$ rosrun background\_modelling background\_modelling}
+
+\item \textit{\$ rosrun clustering clustering}
+
+\item \textit{\$ rosrun calibration calibration}
+
+\item \textit{\$ rosrun distance\_calc distance\_calc}
+
+\item In order to set the static transform between the calibration pattern and the robot base. In terminal, type:\\
+ \textit{\$ rosrun tf static\_transform\_publisher x y z yaw pitch roll base\_link pattern 100}
+ 
+where x, y, z and yaw, pitch, roll has to be specified. With the setup in our project they were: $\left[0, 0, 0, \pi, \pi, \pi \right].$ This might need to be tweaked to get a good calibration.
+
+\item To obtain visualization, type:\\
+\textit{\$ roslaunch sia20d\_mesh\_arm\_navigation planning\_scene\_warehouse\_viewer\_sia20d\_mesh.launch}
+This should launch the visualisation environment RViz.
+
+\end{itemize}
+NOTE: In each terminal there will be data printed about that function current state.
+
+\subsection{Visualization}
+RViz provides a wide range of possibilities for visualization.
+To begin with there are some fundamental settings that always needs to be performed.
+\begin{itemize}
+
+\item Under Global Options, choose /base\_link as Fixed Frame.
+
+\item Add a PointCloud2 and choose /objects as Topic.
+
+\item For one of the Markers choose the Topic /closest\_line
+\end{itemize}
 
 
 \end{document}

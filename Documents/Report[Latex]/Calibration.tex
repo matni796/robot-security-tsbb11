@@ -1,35 +1,47 @@
 % Calibration between coordinate systems.
 
 \subsection{Calibration}
-To relate the camera system to the world system the system has to be calibrated. For calibration of the camera intrinsic parameters and distortions from the pinhole camera model the system uses the models and methodology described by Zhang, 2000 \cite{zhang}. This is performed offline.
+To relate the camera system to the world system defined by a fixed point in a calibration pattern the system has to be calibrated. For calibration of the camera intrinsic parameters and distortions from the pinhole camera model the system uses the models and methodology described by Zhang, 2000 \cite{zhang}. This is performed offline.
 
-For online calibration of the camera extrinsics the same distortion parameters are used with a world fixed calibration pattern.
+To find where the camera is positioned camera extrinsic parameters will also have to be found. This is solved with online calibration of the camera using the same distortion and intrinsic parameters when trying to find a world fixed calibration pattern.
 
-The online calibration is very computationally expensive however since the system is supposed to be stationary recalibration is only done once a second to compensate for small adjustments on the system.
+The online calibration is very computationally expensive, however since the system is supposed to be stationary, recalibration is only done once a second to compensate for small adjustments on the system. The possibility for the camera to move still exists and if so the system would be maladjusted and give out wrong answers which is why the online calibration is performed.
 
 Most of the building blocks of the calibration is implemented by the OpenCV library \cite{camcal}. 
 
 \subsubsection{Intrinsic calibration}
 Before image distortions the projection of the 3D-world to the image plane is described by this matrix:
 
-\[ \left( \begin{array}{ccc}
-a & b & c \\
-d & e & f \\
-g & h & i \end{array} \right)\] 
+\[\begin{bmatrix}
+x \\
+y \\
+w
+\end{bmatrix}
+=
+\begin{bmatrix}
+ f_x & 0   & c_x \\ 
+ 0   & f_y & c_y \\ 
+ 0   & 0   & 1
+\end{bmatrix}
+\begin{bmatrix}
+X \\
+Y \\
+Z
+\end{bmatrix}\] 
 
-Where $f_x$ and $f_y$ are the number of pixels per unit of length, cx and cy are the center pixel coordinates of the image. X, Y and Z are the camera relative positions of a visible point with x, y and w as the homogeneous representation of the pixel coordinate where the point is projected.
+Where $f_x$ and $f_y$ are the number of pixels per unit of length, $c_x$ and $c_y$ are the center pixel coordinates of the image. X, Y and Z are the camera relative positions of a visible point with x, y and w as the homogeneous representation of the pixel coordinate where the point is projected.
 
-Distortions from this model is modelled as radial distortion as well as tangential distortions. Radial distortions produce a fish-eye effect on the image and is compensated for with this model:
+Lens distortions from this model is modelled as radial distortion as well as tangential distortions. Radial distortions produce a fish-eye or barrel effect on the image and is compensated for with this model:
 
-$radial_corrected_x = f(x)$
-$radial_correcced_y = f(y)$
+\[x_{radialcorrected} = x\cdot (1+k_1\cdot r^2 + k_2\cdot r^4 + k_3\cdot r^6)\]
+\[y_{radialcorrected} = y\cdot (1+k_1\cdot r^2 + k_2\cdot r^4 + k_3\cdot r^6)\]
 
-Tangential distortions due to the lense not being perfectly aligned is compensated with this model:
+Tangential distortions due to the lens not being perfectly aligned is compensated with this model:
 
-$tangential_corrected_x = g(x)$
-$tangential_corrected_y = g(y)$
+\[x_{tangentialcorrected} = x + 2p_1xy+p_2(r^2+2x^2)\]
+\[y_{tangentialcorrected} = x + p_1(r^2+2y^2)+2p_1xy\]
 
-Since this is a standard model external libraries have support for these parameters and the error correction from calculating the distortion parameters will cascade into other functions. Intrinsic and distortion calibration is done offline and the parameters are saved into a YAML file.
+Since this is a standard model external libraries have support for these parameters and the distortion factors can improve calculations in other functions too. Intrinsic and distortion calibration is done offline and the parameters are saved into a YAML file.
 
 \subsubsection{Extrinsic calibration}
 To relate the position and state of the robot to the camera there needs to be a reference between a fixed robot frame and the camera frame. To solve this a calibration pattern is placed at a known position relative to the robot.
@@ -38,12 +50,22 @@ This calibration pattern is then detected in the image and the solution to the P
 
 To minimize noise and increase robustness a large chessboard pattern with 6x8 known points is used for calibration. However there is no known analytical solutions to the PnP problem for n > 3 so the problem is solved using optimization (minimization of the sum of squared reprojection errors) with the Levenberg-Marquardt iterative optimization algorithm.
 
-To prevent the optimization getting stuck in local optima the optimization is done on an analytical solution to the P3P problem. The points used for the analytical solution are the four corners of the chessboard, three to solve the P3P problem and one to validate which of the four possible solutions is consistent with the rest of the data.
+To prevent the optimization getting stuck on local optima the system uses initial solutions provided by the P3P solver.
+The points used for these initial solution are the four corners of the chessboard, three to solve the P3P problem and one to validate which of the four possible solutions is consistent with the rest of the data.
+The P3P solver used in OpenCV provides an unknown number of solutions since the algorithm does not handle all possible cases. 
 
-The solution is then further median filtered on one of the rotation parameters to prevent outliers. Though running the system has so far yet to produce an outlier after the previous errors these median filtered points could in the future be averaged to further increase precision if the system demands it.
+The PnP solver then uses these initial solutions to find the optimal solution.
+To verify that the provided solution is correct the system checks that the x-axis in the found coordinate system is flipped compared to the x-axis specified by the camera.
+This is necessary due to the problem of unknown numbers of solutions from the P3P solver.
+
+
+\subsubsection{tf}
+The tf \cite{tf} subsystem is a built in part of ROS for managing transformations between different coordinate systems. It is written and maintained by Tully Foote. The tf package takes the different transformations of the system as input. Using them it can then provide the position of a point in an arbitrary coordinate system at any point in time.
 
 \subsubsection{Transformation of robot joints}
-While running warehouse\_viewer the the transformations between the joints can be obtain given the relation of the joints specified in the robot’s URDF file, see appendix. The tf package included in ROS makes it possible to transform the robot and its joints into a given coordinate system, provided by the RGB camera.
+Since information regarding the design of the robot is provided the transformations between the joints can be obtained. The tf package then makes it possible to transform the robot and its joints into a given coordinate system.
 
 \subsubsection{Transformation into camera coordinate system}
-A static transformation between calibration pattern and the base of the robot in world coordinates is set. Given the transformation from camera to world coordinates it is possible to transform each joint to the camera coordinate system. This results in a set of joints on which the distance calculation to moving objects in the scene can be performed. 
+A static transformation between calibration pattern and the base of the robot is set. 
+The transformations is done in the coordinate system defined by the chessboard corners.
+Given the transformation from camera to calibration pattern, it is possible to transform each joint to the camera coordinate system. This results in a set of joints on which the distance calculation to moving objects in the scene can be performed. 

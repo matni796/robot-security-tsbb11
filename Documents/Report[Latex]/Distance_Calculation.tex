@@ -1,2 +1,8 @@
 \subsection{Distance Calculation}
-For each cluster of points extracted, the remaining problem is to find the smallest distance to the  robot. This is done by brute force, the system iterates through all clusters and for each point it finds the closest euclidean distance to the robot. The data which is saved is the distance itself, the point in the cluster and the joint of the robot which corresponds to the closest distance. The reason for saving the closest point in the cluster and the robot joint is to make it possible to visualize the closest point-joint pair. To gain performance the distance calculation is performed simultaneously as the system is removing parts that correspond to the robot. That way looping through all points several times in a row is avoided.
+For each extracted cluster, the remaining problem is to find the smallest distance to the  robot. 
+This is done by brute force, the system iterates through all clusters and for each point it finds the closest euclidean distance to the robot. 
+The data which is saved is the distance itself, the point in the cluster and the joint of the robot which corresponds to the closest distance. 
+The reason for saving the closest point in the cluster and the robot joint is to make it possible to visualize the closest point-joint pair.
+
+To gain performance the distance calculation is performed simultaneously as the system is removing parts that correspond to the robot. 
+In this way looping through all points several times in a row is avoided.
