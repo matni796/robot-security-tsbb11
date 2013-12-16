@@ -60,8 +60,8 @@ void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) 
 	std::vector<pcl::PointXYZRGB> cloud_cluster;
 	std::vector<pcl::PointIndices> cluster_indices;
 	pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-	ec.setClusterTolerance (0.2); // 2cm
-	ec.setMinClusterSize (500);
+	ec.setClusterTolerance (0.25); // metre
+	ec.setMinClusterSize (125);
 	ec.setMaxClusterSize (25000);
 	ec.setSearchMethod(tree);
 	ec.setInputCloud(pc);
@@ -113,7 +113,7 @@ void downsample(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc,
 		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered){
 	pcl::VoxelGrid<pcl::PointXYZ> vg;
 	vg.setInputCloud(pc);
-	vg.setLeafSize(0.02f, 0.02f, 0.02f);
+	vg.setLeafSize(0.01f, 0.01f, 0.01f);
 	vg.filter(*cloud_filtered);
 }
 
@@ -136,7 +136,7 @@ void clusterExtraction(const sensor_msgs::PointCloud2ConstPtr& input)
 	euclidianClustering(cloud_filtered);
 	stop=clock();
 	float time =((float)stop-(float)start)/1000.0f;
-	std::cout << "Time elapsed: " << time  << "\n";
+		ROS_INFO("Computation time %.3f ms (should be < %.3f ms)", time, 1000.0f/30.0f);
 	}
 }
 

@@ -60,8 +60,8 @@ void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) 
 	std::vector<pcl::PointXYZRGB> cloud_cluster;
 	std::vector<pcl::PointIndices> cluster_indices;
 	pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-	ec.setClusterTolerance (0.25); // metre
-	ec.setMinClusterSize (125);
+	ec.setClusterTolerance (0.15); // metre
+	ec.setMinClusterSize (50);
 	ec.setMaxClusterSize (25000);
 	ec.setSearchMethod(tree);
 	ec.setInputCloud(pc);

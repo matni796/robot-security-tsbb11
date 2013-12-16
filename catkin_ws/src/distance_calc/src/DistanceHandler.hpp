@@ -83,8 +83,7 @@ public:
 		//test =(cv::Mat_<float>(3,1) <<-1.00f,0.0f,100.0f);
 		//robotJoint.push_back(test);
 		sqrLengthBetweenJoints.push_back(1.0f);
-		radiusOfCylinders.push_back(0.01f);
-		insideRobotParameter = 0.8;
+		insideRobotParameter = 0.1;
 		tracking = false;
 
 		//initializing the closest line.
@@ -260,7 +259,7 @@ public:
 			}
 
 			// if statement checks if the object belongs to the robot or not
-			if((data.inside+data.outside != 0)&&!(data.inside/(data.inside+data.outside) > insideRobotParameter)){
+			if((data.inside+data.outside != 0)&&!(((float)data.inside)/((float)data.inside+(float)data.outside) > insideRobotParameter)){
 				//objects.clouds.ca.push_back(rawClusterCloud.ca[i]);
 				if(!cloudFound && data.minDistance > safetyZones.trackingDistance){
 					objects.list.push_back(data);
@@ -297,18 +296,21 @@ public:
                         ObjectData data;
                         data.minDistance = 1000.0f;
                         data.closestJoint = -1;
+			data.inside = 0;
+			data.outside= 0;
                         ++numberOfClusters;
                         for(int j=0; j<rawClusterCloud.ca[i].pa.size(); j++)
                         {
                                 pointInsideRobot(rawClusterCloud.ca[i].pa[j], data);
                         }
-                        if((data.inside+data.outside != 0)&&!(data.inside/(data.inside+data.outside) > insideRobotParameter) ){
+                        if((data.inside+data.outside != 0)&&!((data.inside)/(data.inside+data.outside) > insideRobotParameter) ){
                                 objects.clouds.ca.push_back(rawClusterCloud.ca[i]);
                                 objects.list.push_back(data);
                         } else{
                                 robot.clouds.ca.push_back(rawClusterCloud.ca[i]);
                                 robot.list.push_back(data);
                         }
+			std::cout << "inside: " << data.inside << std::endl << "outside: " << data.outside << std::endl;
                 }
         }
 
@@ -349,7 +351,7 @@ public:
 
 		if( dot < 0.0f || dot > lengthsq )
 		{
-			++data.outside;
+			//++data.outside;
 		}
 		else
 		{
@@ -357,11 +359,11 @@ public:
 
 			if( dsq > radius_sq )
 			{
-				++data.inside;
+				++data.outside;
 			}
 			else
 			{
-				++data.outside;		// return true if inside cylinder
+				++data.inside;		// return true if inside cylinder
 			}
 		}
 	}
@@ -398,7 +400,7 @@ public:
 				if(i > 0){
 					double sqrLength = pow(cv::norm(joint-oldJoint),2); // TODO: Check type
 					sqrLengthBetweenJoints.push_back(sqrLength);
-					radiusOfCylinders.push_back(0.01f);
+					radiusOfCylinders.push_back(0.09f);
 				}
 				oldJoint = joint;
 			}

@@ -105,22 +105,39 @@ public:
 				p3p3dPoints.push_back(chessBoard[cornerIndices[i]]);
 				p3p2dPoints.push_back(boardCorners[cornerIndices[i]]);
 			}
+			// analytical solution (does not handle every degenerative case)
 			cv::solvePnP(p3p3dPoints, p3p2dPoints, intrinsics, distortions, r, t, false, CV_P3P);
-			
-			// transformT = listener.getTransform("circle_grid", "chessboard");
-			// points = boardPoints + transformT * circlePoints
-			// corners = boardCorners + circleCorners
-			// solvePnp(points, corners, intrinsics, distortions, r, t, false);
+			// iterative solution on all points
 			cv::solvePnP(chessBoard, boardCorners, intrinsics, distortions, r, t, true, CV_ITERATIVE);
-
+			// check if iterative solution has not degenerated
+			// camera is forced to be looking downwards
 			filterTransform(r, t);
 		}
 		sleep(1);
 	}
 
+	template<typename T>
+	tf::Vector3 tfVectorFromCvMat(cv::Mat in) {
+		return tf::Vector3(in.at<T>(0), in.at<T>(1), in.at<T>(2));
+	}
+
 	std::vector<elem> history;
 	std::vector<elem> sortedHistory;
 	void filterTransform(cv::Mat r, cv::Mat t) {
+		// first check if transform is unreasonable
+		tf::Transform transform;
+		tf::Vector3 axis = tfVectorFromCvMat<double>(r);
+		double angle = axis.length();
+		transform.setRotation(tf::Quaternion(axis.normalize(), angle));
+		tf::Vector3 refAxis1(-1.0f, 0.0f, 0.0f), refAxis2(0.0f, -1.0f, 0.0f);
+		double scalar1 = (transform*refAxis1).dot(refAxis1);
+		//		double scalar2 = 0;(transform*refAxis2).dot(refAxis2);
+		if(scalar1 > 0) {
+			ROS_INFO("Got illegal transform, r = [ %5.2f, %5.2f, %5.2f ], %5.2f rad",
+					 axis.getX(), axis.getY(), axis.getZ(), angle);
+			return;
+		}
+
 		pthread_mutex_lock(&calibrationLock);
 
 		history.push_back(std::make_pair(t, r));
@@ -133,11 +150,6 @@ public:
 		rvec = sortedHistory[sortedHistory.size() / 2].second;
 
 		pthread_mutex_unlock(&calibrationLock);
-	}
-
-	template<typename T>
-	tf::Vector3 tfVectorFromCvMat(cv::Mat in) {
-		return tf::Vector3(in.at<T>(0), in.at<T>(1), in.at<T>(2));
 	}
 
 	void publishTransform() {
@@ -216,6 +228,7 @@ int main (int argc, char** argv) {
 	pthread_create(&thread, NULL, publishTransform, NULL);
 	ros::spin();
 	cal->completed = true;
+	pthread_mutex_unlock(&cal->calibrationLock);
 	pthread_join(thread, NULL);
 	delete cal;
 }
