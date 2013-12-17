@@ -56,6 +56,7 @@ private:
 	std::vector<cv::Mat_ <float> > robotJoint;
 	std::vector<float> sqrLengthBetweenJoints;
 	std::vector<float> radiusOfCylinders;
+	float radiusOfCylinderParameter;
 	std::string jointNames[7] ;
 	pcl::PointXYZ minPoint;
 	int numberOfClusters;
@@ -72,18 +73,18 @@ public:
 		linePublisher = nh.advertise<visualization_msgs::Marker>("closest_line", 0);
 		pointCloudPublisher = nh.advertise<sensor_msgs::PointCloud2>("objects",0);
 		objects.closestObject = -1;
+		
 		//only for testing
 		cv::Mat test;
 		test = (cv::Mat_<float>(3,1) <<-1.0f,0.0f,3.5f);
 		robotJoint.push_back(test);
 		test =(cv::Mat_<float>(3,1) <<-1.0f,0.0f,3.5f);
 		robotJoint.push_back(test);
-		//test =(cv::Mat_<float>(3,1) <<1.0f,0.0f,3.5f);
-		//robotJoint.push_back(test);
-		//test =(cv::Mat_<float>(3,1) <<-1.00f,0.0f,100.0f);
-		//robotJoint.push_back(test);
 		sqrLengthBetweenJoints.push_back(1.0f);
+		
+		//Some parameters
 		insideRobotParameter = 0.1;
+		radiusOfCylinderParameter = 0.09f;
 		tracking = false;
 
 		//initializing the closest line.
@@ -114,7 +115,7 @@ public:
 	void distanceCallback(clustering::clusterArray msg){ //This function is what's doing all the work.
 		rawClusters = msg;
 		if(!updateRobotCoordinates())
-			return; // skip this message
+			return;
 		if(tracking)
 			newCloudsHandler(msg);
 		else
@@ -124,20 +125,6 @@ public:
 		publishPointCloud(objects.clouds);
 		displayCurrentStatus();
 	}
-
-	/*		void loop(){
-		if(!updateRobotCoordinates())
-		    return; // skip this message
-		if(tracking)
-			newCloudsHandler(rawClusters);
-		else
-			removeRobot(rawClusters);
-		setClosestObject();
-		publishLine();
-		publishPointCloud(objects.clouds);
-		displayCurrentStatus();
-
-		}*/
 
 	void publishPointCloud(clustering::clusterArray& clusters){
 		std::vector<pcl::PointXYZ> tempObjectVector;
@@ -296,8 +283,8 @@ public:
                         ObjectData data;
                         data.minDistance = 1000.0f;
                         data.closestJoint = -1;
-			data.inside = 0;
-			data.outside= 0;
+						data.inside = 0;
+						data.outside= 0;
                         ++numberOfClusters;
                         for(int j=0; j<rawClusterCloud.ca[i].pa.size(); j++)
                         {
@@ -310,7 +297,6 @@ public:
                                 robot.clouds.ca.push_back(rawClusterCloud.ca[i]);
                                 robot.list.push_back(data);
                         }
-			std::cout << "inside: " << data.inside << std::endl << "outside: " << data.outside << std::endl;
                 }
         }
 
@@ -349,11 +335,7 @@ public:
 			data.closestJoint= jointIndex;
 		}
 
-		if( dot < 0.0f || dot > lengthsq )
-		{
-			//++data.outside;
-		}
-		else
+		if(!(dot < 0.0f || dot > lengthsq))
 		{
 			dsq = (pdx*pdx + pdy*pdy + pdz*pdz) - dot*dot/lengthsq;
 
@@ -400,7 +382,7 @@ public:
 				if(i > 0){
 					double sqrLength = pow(cv::norm(joint-oldJoint),2); // TODO: Check type
 					sqrLengthBetweenJoints.push_back(sqrLength);
-					radiusOfCylinders.push_back(0.04f);
+					radiusOfCylinders.push_back(radiusOfCylinderParameter);
 				}
 				oldJoint = joint;
 			}
@@ -421,10 +403,6 @@ public:
 			std::cout << "The closest object is " << objects.list[objects.closestObject].minDistance << " m away from joint number ";
 			std::cout << "The closest object is " << objects.closestObject << "\n";
 			for(int i=0; i<objects.list.size(); i++){
-				/*if(objects.list[i].visible)
-					std::cout << "object " << i << " visible" << std::endl;
-				else
-				   	std::cout << "object " << i <<" invisible" << std::endl;*/
 				std::cout << "object: "<< i<< " distance:" << objects.list[i].minDistance << "\n"; 
 					
 			}

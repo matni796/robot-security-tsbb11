@@ -12,8 +12,6 @@
 #include <opencv2/opencv.hpp>
 #include <stereo_msgs/DisparityImage.h>
 #include "std_msgs/String.h"
-//#include <PointCloud.h>
-//#include <stereo_msgs/PointCload2.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/PointCloud.h>
 // PCL specific includes
@@ -53,16 +51,20 @@ clustering::clusterArray clusterArr;
 clustering::point point;
 clustering::pointArray pointArr;
 
+//Parameters for clustering
+float clusterTolerance = 0.15f; //meter
+float minClusterSize = 50.0f;
+float maxClusterSize = 25000.0f;
+
 void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) {
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>());
 	tree->setInputCloud(pc);
-	//TODO: Resize image input (Needed for speedup of calculation..)
 	std::vector<pcl::PointXYZRGB> cloud_cluster;
 	std::vector<pcl::PointIndices> cluster_indices;
 	pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
-	ec.setClusterTolerance (0.15); // metre
-	ec.setMinClusterSize (50);
-	ec.setMaxClusterSize (25000);
+	ec.setClusterTolerance (clusterTolerance);
+	ec.setMinClusterSize (minClusterSize);
+	ec.setMaxClusterSize (maxClusterSize);
 	ec.setSearchMethod(tree);
 	ec.setInputCloud(pc);
 	ec.extract(cluster_indices);
@@ -95,16 +97,6 @@ void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) 
 		clusterArr.ca.push_back(pointArr);
 	}
 
-//	cout << cloud_cluster.size() << endl;
-//	cout << clusterArr.ca.size() << endl;
-//	if(clusterArr.ca.size() > 0 ){
-//		cout << clusterArr.ca[0].pa.size() << endl;
-//
-//	}
-//	if(clusterArr.ca.size() > 1 ){
-//		cout << clusterArr.ca[1].pa.size() << endl;
-//
-//	}
 	ROS_INFO("Publishing cluster array of size %d to cluster_vectors", clusterArr.ca.size());
 	chatter_pub.publish(clusterArr);
 
@@ -122,7 +114,6 @@ void clusterExtraction(const sensor_msgs::PointCloud2ConstPtr& input)
 	clock_t start, stop;  	
   	start=clock();
 	ROS_INFO("Received Point Cloud: %dx%d", input->height, input->width);
-	//ROS_INFO("Received Point Cloud: %d.", input.height);
 	boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc(new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::fromROSMsg<pcl::PointXYZ>(*input,*pc);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);

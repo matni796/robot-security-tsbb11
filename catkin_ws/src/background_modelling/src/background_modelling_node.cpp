@@ -46,7 +46,13 @@ cv::Mat buffer;
 
 // Elements from projection matrix needed for PC construction
 float fx, fy, cx, cy;
-const float normFact = 255.0f/6.0f;			// Normalization factor
+const float normFact = 255.0f/6.0f;		// Normalization factor
+
+//Parameters for backgroundmodelling
+int history = 20000;
+float varThreashold = 4.0f;
+int nMixtures = 5;
+
 pcl::PointCloud<pcl::PointXYZ>::Ptr publishedCloud;
 
 //pcl::visualization::CloudViewer viewer("Cloud viewer");
@@ -119,13 +125,11 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 				if(z == z) { // NaN check
 					x = getWorldCoord(fx,cx,z,u);
 					y = getWorldCoord(fy,cy,z,v);
-					//cloud.push_back(pcl::PointXYZ(x,y,z));
 					publishedCloud->push_back(pcl::PointXYZ(x,y,z));
 				}
 			}
 		}
 	}
-	//cloud.push_back(pcl::PointXYZ(0.0f,0.0f,0.0f));
 
 	// Publish point cloud
 		
@@ -133,7 +137,6 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 	publishedCloud->insert(publishedCloud->begin(), cloud.begin(), cloud.end());
 	ROS_INFO("Publishing %dx%d point cloud to foreground_cloud", publishedCloud->width, publishedCloud->height);
 	pub.publish(publishedCloud);
-	//viewer.showCloud(myCloud);
 	publishedCloud->clear();
 	stop = clock();
 	float time =((float)stop-(float)start)/1000.0f;
@@ -173,8 +176,8 @@ int main (int argc, char** argv)
 	cv::namedWindow("Foreground");
 	ros::init (argc, argv, "background_modelling");
 	ros::NodeHandle nh;
-	bg = new cv::BackgroundSubtractorMOG2(20000, 4.0f, false);
-	bg->set("nmixtures", 5);
+	bg = new cv::BackgroundSubtractorMOG2(history, varThreashold, false);
+	bg->set("nmixtures", nMixtures);
 
 	// Create a ROS subscriber for the input point cloud
 	ros::Subscriber sub = nh.subscribe("/camera/depth/image", 1, imageCb);
