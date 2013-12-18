@@ -1,7 +1,20 @@
 % Distance Calculation 
 
 \begin{frame}{Calculation of Distances}
-	\begin{itemize}
-	\item Brute force
-	\end{itemize}
+	Distances between objects and robot	
+	\begin{algorithm}[H]
+ %\SetLine % For v3.9
+ \SetAlgoLined % For previous releases [?]
+ \KwData{Robot Joints, Clusters}
+ \For{Every point in a cluster}{
+        \For{Every Joint position}{
+        Check distance between Joint and cluster point\;
+  \If{distance < minDistance}{
+  distance = minDistance;
+ }
+ }
+ }
+ \caption{Distance Calculation}
+\end{algorithm}
 \end{frame}
+

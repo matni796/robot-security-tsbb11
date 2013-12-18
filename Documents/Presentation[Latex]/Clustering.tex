@@ -1,11 +1,31 @@
 % Clustering 
 
 \begin{frame}{Clustering}
+	
+	Euclidian clustering algorithm
 	\begin{itemize}
-	\item Euclidian clustering algirithm
-	\begin{itemize}
-	\item KD-Tree representation
-	\item Points which are close are concantenated 
+	\item Split into individual clusters
+	\item Remove unwanted artifacts
+	\item Enables distance calculations between objects
+	\item Facilitates tracking of objects 
 	\end{itemize}
-	\end{itemize}
+	
+	\end{frame}
+	\begin{frame}
+	\begin{algorithm}[H]
+ %\SetLine % For v3.9
+ \SetAlgoLined % For previous releases [?]
+ \KwData{Point cloud, Cluster parameter}
+ \For{every point not in a cluster}{
+        \For{every other point}{
+        check distance to point\;
+  \eIf{distance < Cluster parameter}{
+  assign to the same cluster;
+ }{
+  assign to a new cluster\;
+ }
+ }
+ }
+ \caption{Clustering Algorithm}
+\end{algorithm}
 \end{frame}
