@@ -7,17 +7,14 @@
 \item Controller, (DX100)
 \begin{itemize}
 \item Controlls the robot (SIA20D)
-\begin{itemize}
-\item Via programming pendant
-\end{itemize}
-\item Receives robot orientation 
+\item Robot orientation 
 \end{itemize}
 \end{itemize}
 
   \column{.5\textwidth}
     \begin{figure}[H]
 	\begin{center}
-	\includegraphics[width=5 cm]{robot}
+	\includegraphics[width=5 cm]{controller}
 	\end{center}
 	\end{figure}
     \end{columns}
@@ -30,12 +27,11 @@
 \begin{itemize}
 \item ROS (Robot Operating System)
 \begin{itemize}
+	\item Communicate with controller
 	\item OpenCV
 	\item PCL (point cloud library)
 \end{itemize}
-\item Connected via ethernet
-\item Joint states $[rad]$ to computer
-
+\item Joint coordinates to computer
 \item ''Send'' motion commands to controller
 \end{itemize}
 
