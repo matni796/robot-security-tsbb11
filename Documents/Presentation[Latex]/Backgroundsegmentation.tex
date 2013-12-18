@@ -3,19 +3,33 @@
 \begin{frame}{Background segmentation}
 	\begin{itemize}
 
-	\item Based on OpenCV
+	\item From OpenCV
+	\begin{itemize}
+	\item Gaussian mixtures
+	\end{itemize}
 	\item Applied to depth image
 	\begin{itemize}
 	\item Binary foreground
-    \end{itemize}	
-	\item Intrinsic calibration, foreground and depth
-	\begin{itemize}
-	\item Point cloud
+    \end{itemize}
 	\end{itemize}
-	\item Constructed for RGB
+
+	
+	\begin{figure}[H]
+	\begin{center}
+	\includegraphics[scale= 0.3]{foreground}
+	\end{center}
+	\end{figure}
+	
+\end{frame}
+\begin{frame}{Background segmentation}
+
+\begin{itemize}
+	\item Method constructed for RGB, but
+	\item Performance well on depth image
+	\item Kinect uses a projection pattern
 	\begin{itemize}
-	\item Good performance on depth image
-	\item No problems with shadows 
+		\item Small influence of shadows
+		\item Reflections give NaN values
 	\end{itemize}
 	\end{itemize}
 \end{frame}

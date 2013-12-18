@@ -1,11 +1,23 @@
 % PointCLoudCalc 
 
-\begin{frame}{Calculation of Point Cloud}
+\begin{frame}{Construction of Point Cloud}
+
 	\begin{itemize}
-	\item Known Values are:
+	\item Known parameters:
 	\begin{itemize}
-	\item Depth value
-	\item Pixel position 
+	\item Foreground image
+	\begin{itemize}
+		\item Pixel coordinates $x_i,y_i$
 	\end{itemize}
+	\item Depth image
+	\begin{itemize}
+		\item Depth $Z_i = Z(x_i,y_i)$ 
+		\item NaN values ignored
+	\end{itemize}
+	\item Intrinsic calibration, (IR-camera)
+	\end{itemize}
+	\item Possible to obtain $X_i,Y_i$
+	\item ${\bf P_i} = [X_i, Y_i, Z_i]^T \in \mathbb{R}^3$
+
 	\end{itemize}
 \end{frame}

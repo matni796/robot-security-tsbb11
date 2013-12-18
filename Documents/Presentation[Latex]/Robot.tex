@@ -1,23 +1,38 @@
 % Robot
-\begin{frame}{Robot}
+\begin{frame}{Robot and controller}
 \begin{itemize}
-\item DX100 Controller
+\item Controller, (DX100)
 \begin{itemize}
-\item Controlls the robot
-\item Receives joint states
+\item Controlls the robot (SIA20D)
+\begin{itemize}
+\item Via programming pendant
+\end{itemize}
+\item Receives robot orientation 
+\end{itemize}
 \end{itemize}
 
-\item Computer - controller
+\begin{figure}[H]
+	\begin{center}
+	\includegraphics[scale = 0.05]{robot}
+	\end{center}
+	\end{figure}
+
+\end{frame}
+\begin{frame}{Controller - Computer interface}
+
+
 \begin{itemize}
+\item ROS (Robot Operating System)
+\begin{itemize}
+	\item OpenCV
+	\item PCL (point cloud library)
+\end{itemize}
 \item Connected via ethernet
-\item Joint states $[rad]$ to Computer
-\begin{itemize}
-\item Transform into common coordinate system
-\end{itemize}
-\item Send motion commands to Controller
+\item Joint states $[rad]$ to computer
+
+\item ''Send'' motion commands to controller
 \end{itemize}
 
-\end{itemize}
 \end{frame}
 
 
