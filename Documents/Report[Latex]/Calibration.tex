@@ -48,7 +48,7 @@ To relate the position and state of the robot to the camera there needs to be a 
 
 This calibration pattern is then detected in the image and the solution to the PnP (Perspective-n-Point) problem with the camera parameters is used as extrinsic parameters.
 
-To minimize noise and increase robustness a large chessboard pattern with 6x8 known points is used for calibration. However there is no known analytical solutions to the PnP problem for n > 3 so the problem is solved using optimization (minimization of the sum of squared reprojection errors) with the Levenberg-Marquardt iterative optimization algorithm.
+To minimize noise and increase robustness a large chessboard pattern with 6x8 known points is used for calibration. However there is no known analytical solutions to the PnP problem for n > 3 so the problem is solved using optimization (minimization of the sum of squared re projection errors) with the Levenberg-Marquardt iterative optimization algorithm.
 
 To prevent the optimization getting stuck on local optima the system uses initial solutions provided by the P3P solver.
 The points used for these initial solution are the four corners of the chessboard, three to solve the P3P problem and one to validate which of the four possible solutions is consistent with the rest of the data.

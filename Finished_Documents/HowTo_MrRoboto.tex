@@ -10,8 +10,6 @@
 
 \begin{document}
 
-\section*{MrRoboto}
-
 \section{How to setup system}
 If you're using the robot lab's computer skip to \ref{setup}.
 \subsection{Initial computer settings}
@@ -141,7 +139,7 @@ Use \textit{Ctrl+Shift+T} to add a tab to existing terminal window.
 \item In order to set the static transform between the calibration pattern and the robot base. In terminal, type:\\
  \textit{\$ rosrun tf static\_transform\_publisher x y z yaw pitch roll pattern base\_link 100}
  
-where x, y, z and yaw, pitch, roll has to be specified. With the setup in our project they were: $\left[0.7, 0.8, 2.3, \frac{\pi}{2}, 0, \pi \right].$ This might need to be tweaked to get a good calibration.
+where x, y, z and yaw, pitch, roll has to be specified. With the setup in our project they were: $\left[0.7, 0.7, 2.25, \frac{\pi}{2}, 0, \pi \right].$ This might need to be tweaked to get a good calibration.
 
 \item To obtain visualization, type:\\
 \textit{\$ roslaunch sia20d\_mesh\_arm\_navigation planning\_scene\_warehouse\_viewer\_sia20d\_mesh.launch}
@@ -167,7 +165,7 @@ To begin with there are some fundamental settings that always needs to be perfor
 \item Set "overlay alpha" to 1
 \item Choose an appropriate image rendering.
 \end{itemize} 
-\item Set queue size to 0 everywhere
+\item Set queue size to 1 everywhere
 \end{itemize}
 
 \subsection{Rebuilding the system}
