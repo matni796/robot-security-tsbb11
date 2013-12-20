@@ -53,7 +53,7 @@ clustering::pointArray pointArr;
 
 //Parameters for clustering
 float clusterTolerance = 0.15f; //meter
-float minClusterSize = 50.0f;
+float minClusterSize = 100.0f;
 float maxClusterSize = 25000.0f;
 
 void euclidianClustering(boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > pc) {

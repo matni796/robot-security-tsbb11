@@ -53,8 +53,8 @@ private:
 	ObjectDataList objects;
 	ObjectDataList robot;
 	bool tracking;
-	std::vector<cv::Mat_ <float> > robotJoint;
-	std::vector<float> sqrLengthBetweenJoints;
+	std::vector<clustering::point> robotJoint;
+	std::vector<float> lengthBetweenJoints;
 	std::vector<float> radiusOfCylinders;
 	float radiusOfCylinderParameter;
 	std::string jointNames[7] ;
@@ -62,7 +62,7 @@ private:
 	int numberOfClusters;
 	pcl::PointCloud<pcl::PointXYZ>::Ptr publishedPointCloud;
 	SecurityDistances safetyZones;	
-	    	tf::TransformListener listener;	
+	tf::TransformListener listener;	
 
 public:
 	DistanceHandler(ros::NodeHandle& nh) :
@@ -75,15 +75,15 @@ public:
 		objects.closestObject = -1;
 		
 		//only for testing
-		cv::Mat test;
+		/*		cv::Mat test;
 		test = (cv::Mat_<float>(3,1) <<-1.0f,0.0f,3.5f);
 		robotJoint.push_back(test);
 		test =(cv::Mat_<float>(3,1) <<-1.0f,0.0f,3.5f);
 		robotJoint.push_back(test);
-		sqrLengthBetweenJoints.push_back(1.0f);
+		lengthBetweenJoints.push_back(1.0f);*/
 		
 		//Some parameters
-		insideRobotParameter = 0.1;
+		insideRobotParameter = 0.3;
 		radiusOfCylinderParameter = 0.09f;
 		tracking = false;
 
@@ -143,35 +143,35 @@ public:
 
 	void publishLine(){
 		if(objects.closestObject!= -1){
-			cv::Mat joint = robotJoint[objects.list[objects.closestObject].closestJoint];
+			clustering::point joint = robotJoint[objects.list[objects.closestObject].closestJoint];
 			pcl::PointXYZ objectPoint = objects.list[objects.closestObject].minPoint;
 			float distance = objects.list[objects.closestObject].minDistance;			
 			if (distance <=safetyZones.greenDistance){
 				geometry_msgs::Point p;
-				p.x=joint.at<float>(0,0);
-				p.y=joint.at<float>(1,0);
-				p.z= joint.at<float>(2,0);
+				p.x=joint.x;
+				p.y=joint.y;
+				p.z= joint.z;
 				line.points.push_back(p);
 				p.x=objectPoint.x;
 				p.y=objectPoint.y;
 				p.z=objectPoint.z;
 				line.points.push_back(p);
-				line.scale.x=0.1;				
+				line.scale.x=0.05;				
 				if (distance <= safetyZones.redDistance){
-				line.color.a=1.0;
-				line.color.g=0.0;
-				line.color.b=0.0;
-				line.color.r=1.0;
+					line.color.a=1.0;
+					line.color.g=0.0;
+					line.color.b=0.0;
+					line.color.r=1.0;
 				} else if (distance <= safetyZones.yellowDistance){
-				line.color.a=1.0;
-				line.color.g=1.0;
-				line.color.b=0.0;
-				line.color.r=1.0;
+					line.color.a=1.0;
+					line.color.g=1.0;
+					line.color.b=0.0;
+					line.color.r=1.0;
 				} else{
-				line.color.a=1.0;
-				line.color.g=1.0;
-				line.color.b=0.0;
-				line.color.r=0.0;
+					line.color.a=1.0;
+					line.color.g=1.0;
+					line.color.b=0.0;
+					line.color.r=0.0;
 				}
 			} 
 			linePublisher.publish(line);
@@ -190,10 +190,10 @@ public:
 	// Also calculates the distance between each point cloud, that doesn't belong to robot, and
 	// closest joint.
 	//It removes the clouds that belongs to the robot.
-	void newCloudsHandler(clustering::clusterArray& rawClusterCloud){
+	void newCloudsHandler(clustering::clusterArray& rawClusterCloud) {
 		objects.clouds.ca.clear();
 		// Sets every object/cloud from previous frame to invisible.
-		for (int i = 0; i < objects.list.size(); i++){
+		for (int i = 0; i < objects.list.size(); i++) {
 			objects.list[i].visible = false;
 		}
 		//objects.list.clear();
@@ -201,16 +201,16 @@ public:
 		objects.closestObject = -1;
 		robot.list.clear();
 
-		for(int i=0; i<rawClusterCloud.ca.size(); i++)
-		{
+		for(int i=0; i<rawClusterCloud.ca.size(); i++) {
 			ObjectData data;
 			data.cloud.pa = rawClusterCloud.ca[i].pa;
 			data.visible = true;
 			data.minDistance = 1000.0f;
 			data.closestJoint = -1;
+			data.outside = 0;
+			data.inside = 0;
 			++numberOfClusters;
-			for(int j=0; j<rawClusterCloud.ca[i].pa.size(); j++)
-			{
+			for(int j=0; j<rawClusterCloud.ca[i].pa.size(); j++) {
 				pointInsideRobot(rawClusterCloud.ca[i].pa[j], data);
 				data.meanPoint.x += rawClusterCloud.ca[i].pa[j].x;
 				data.meanPoint.y += rawClusterCloud.ca[i].pa[j].y;
@@ -227,17 +227,17 @@ public:
 			bool cloudFound = false;
 			for (int k = 0; k < objects.list.size(); k++)
 				if(!objects.list[i].visible){{
-				cloudDistance = sqrt(powf(objects.list[k].meanPoint.x - data.meanPoint.x, 2) +
-								powf(objects.list[k].meanPoint.y - data.meanPoint.y, 2) +
-								powf(objects.list[k].meanPoint.z - data.meanPoint.z, 2));
-				if (cloudDistance < nearestCloud){
+						cloudDistance = sqrt(powf(objects.list[k].meanPoint.x - data.meanPoint.x, 2) +
+											 powf(objects.list[k].meanPoint.y - data.meanPoint.y, 2) +
+											 powf(objects.list[k].meanPoint.z - data.meanPoint.z, 2));
+						if (cloudDistance < nearestCloud){
 
-					matchingCloud = k;
-					nearestCloud = cloudDistance;
-					cloudFound = true;
+							matchingCloud = k;
+							nearestCloud = cloudDistance;
+							cloudFound = true;
+						}
+					}
 				}
-			}
-			}
 			// Update list of object
 			if(cloudFound){
 				objects.list[matchingCloud] = data;
@@ -253,8 +253,8 @@ public:
 					std::cout << "New cloud! \n" << std::endl;
 				}
 			} else{// This is a robot object
-					robot.clouds.ca.push_back(rawClusterCloud.ca[i]);
-					robot.list.push_back(data);
+				robot.clouds.ca.push_back(rawClusterCloud.ca[i]);
+				robot.list.push_back(data);
 			}
 
 		}
@@ -264,90 +264,105 @@ public:
 			if (objects.list[i].visible == false && objects.list[i].minDistance > safetyZones.trackingDistance){
 				std::cout << "Remove object from list" << std::endl;
 				objects.list.erase (objects.list.begin() + i);// Erases the object list at position i.								
-				}
+			}
 		}
 		for(int i = 0; i < objects.list.size(); i++){
 			objects.clouds.ca.push_back(objects.list[i].cloud);
 		}
 	}
 
- //Functions regarding removal of the robot without tracking!
-        void removeRobot(clustering::clusterArray& rawClusterCloud){
-                objects.clouds.ca.clear();
-                objects.list.clear();
-                objects.closestObject = -1;
-                robot.list.clear();
+	//Functions regarding removal of the robot without tracking!
+	void removeRobot(clustering::clusterArray& rawClusterCloud){
+		objects.clouds.ca.clear();
+		objects.list.clear();
+		objects.closestObject = -1;
+		robot.list.clear();
 
-                for(int i=0; i<rawClusterCloud.ca.size(); i++)
-                {
-                        ObjectData data;
-                        data.minDistance = 1000.0f;
-                        data.closestJoint = -1;
-						data.inside = 0;
-						data.outside= 0;
-                        ++numberOfClusters;
-                        for(int j=0; j<rawClusterCloud.ca[i].pa.size(); j++)
-                        {
-                                pointInsideRobot(rawClusterCloud.ca[i].pa[j], data);
-                        }
-                        if((data.inside+data.outside != 0)&&!((data.inside)/(data.inside+data.outside) > insideRobotParameter) ){
-                                objects.clouds.ca.push_back(rawClusterCloud.ca[i]);
-                                objects.list.push_back(data);
-                        } else{
-                                robot.clouds.ca.push_back(rawClusterCloud.ca[i]);
-                                robot.list.push_back(data);
-                        }
-                }
-        }
+		for(int i=0; i<rawClusterCloud.ca.size(); i++) {
+			ObjectData data;
+			data.minDistance = 1000.0f;
+			data.closestJoint = -1;
+			data.inside = 0;
+			data.outside= 0;
+			++numberOfClusters;
+			for(int j=0; j<rawClusterCloud.ca[i].pa.size(); j++)
+				pointInsideRobot(rawClusterCloud.ca[i].pa[j], data);
+
+			int total = data.inside+data.outside;
+			if(total != 0 && (float)data.inside / total < insideRobotParameter) {
+				objects.clouds.ca.push_back(rawClusterCloud.ca[i]);
+				objects.list.push_back(data);
+			} else{
+				robot.clouds.ca.push_back(rawClusterCloud.ca[i]);
+				robot.list.push_back(data);
+			}
+			std::cout << "outside: " << data.outside << std::endl;
+			std::cout << "inside: " << data.inside << std::endl;
+		}
+	}
 
 	void pointInsideRobot(clustering::point inputPoint, ObjectData& data){
-		for(int i=0; i<robotJoint.size()-1; i++){
-			pointInsideCylinder(robotJoint[i],robotJoint[i+1],sqrLengthBetweenJoints[i],radiusOfCylinders[i],inputPoint,data, i);
+		calculateClosestJoint(inputPoint, data);
+
+		for(int i = 0; i < robotJoint.size()-1; ++i) {
+			float radius = radiusOfCylinders[i], length = lengthBetweenJoints[i];
+			bool res = pointInsideCylinder(robotJoint[i],
+										   robotJoint[i+1],
+										   length*length,
+										   radius*radius,
+										   inputPoint,
+										   data);
+			if(res) {
+				++data.inside;
+				return;
+			}
+		}
+		++data.outside;
+	}
+	
+	void calculateClosestJoint(clustering::point testpt, ObjectData & data) {
+		for(int i = 0; i < robotJoint.size(); ++i) {
+			float dx = testpt.x - robotJoint[i].x;
+			float dy = testpt.y - robotJoint[i].y;
+			float dz = testpt.z - robotJoint[i].z;
+			float dist = sqrt(dx*dx+dy*dy+dz*dz);
+			if(dist < data.minDistance) {
+				data.minDistance = dist;
+				data.minPoint.x = testpt.x;
+				data.minPoint.y = testpt.y;
+				data.minPoint.z = testpt.z;
+				data.closestJoint = i;
+			}
 		}
 	}
 
 	//Algorithm copied from http://www.flipcode.com/archives/Fast_Point-In-Cylinder_Test.shtml
-	void pointInsideCylinder( cv::Mat& pt1, cv::Mat& pt2, float lengthsq, float radius_sq,
-			const clustering::point& testpt, ObjectData& data, int jointIndex)
+	bool pointInsideCylinder( clustering::point pt1, clustering::point pt2, float lengthsq, float radius_sq,
+							  const clustering::point& testpt, ObjectData& data)
 	{
+		if(pt1.x == pt2.x && pt1.y == pt2.y && pt1.z == pt2.z)
+			return false;
 		float dx, dy, dz;	// vector d  from line segment point 1 to point 2
 		float pdx, pdy, pdz;	// vector pd from point 1 to test point
 		float dot, dsq;
 
-		dx = pt2.at<float>(0,0) - pt1.at<float>(0,0);	// translate so pt1 is origin.  Make vector from
-		dy = pt2.at<float>(1,0) - pt1.at<float>(1,0);     // pt1 to pt2.  Need for this is easily eliminated
-		dz = pt2.at<float>(2,0) - pt1.at<float>(2,0);
+		dx = pt2.x - pt1.x;	// translate so pt1 is origin.  Make vector from
+		dy = pt2.y - pt1.y;     // pt1 to pt2.  Need for this is easily eliminated
+		dz = pt2.z - pt1.z;
 
-		pdx = testpt.x - pt1.at<float>(0,0);		// vector from pt1 to test point.
-		pdy = testpt.y - pt1.at<float>(1,0);
-		pdz = testpt.z - pt1.at<float>(2,0);
-
+		pdx = testpt.x - pt1.x;		// vector from pt1 to test point.
+		pdy = testpt.y - pt1.y;
+		pdz = testpt.z - pt1.z;
 
 		dot = pdx * dx + pdy * dy + pdz * dz;
+		if(dot < 0.0f || dot > lengthsq)
+			return false; // outside cylinder top/bottom bounds
+		dsq = (pdx*pdx + pdy*pdy + pdz*pdz) - dot*dot/lengthsq;
+		if(dsq > radius_sq)
+			return false; // outside cylinder radial bound
 
-		float dist = compareToRobot(testpt.x, testpt.y, testpt.z, pt1); //Will only calculate distance to the six first joints
-		if (dist < data.minDistance)
-		{
-			data.minDistance = dist;
-			data.minPoint.x = testpt.x;
-			data.minPoint.y = testpt.y;
-			data.minPoint.z = testpt.z;
-			data.closestJoint= jointIndex;
-		}
+		return true; // inside cylinder
 
-		if(!(dot < 0.0f || dot > lengthsq))
-		{
-			dsq = (pdx*pdx + pdy*pdy + pdz*pdz) - dot*dot/lengthsq;
-
-			if( dsq > radius_sq )
-			{
-				++data.outside;
-			}
-			else
-			{
-				++data.inside;		// return true if inside cylinder
-			}
-		}
 	}
 
 	void setClosestObject(){
@@ -364,7 +379,7 @@ public:
 
 	bool updateRobotCoordinates(){
 		robotJoint.clear();
-		sqrLengthBetweenJoints.clear();
+		lengthBetweenJoints.clear();
 		radiusOfCylinders.clear();
 		tf::StampedTransform transform;
 		cv::Mat oldJoint, joint;
@@ -372,25 +387,30 @@ public:
 		try {
 			for(int i=0;i<7;++i){
 				listener.lookupTransform("/camera_depth_optical_frame", jointNames[i],
-				ros::Time(0), transform);	
-				float x =transform.getOrigin().x();
-				float y =transform.getOrigin().y();
-				float z =transform.getOrigin().z();
+										 ros::Time(0), transform);	
+				tf::Vector3 origin = transform.getOrigin();
+				float x = origin.x();
+				float y = origin.y();
+				float z = origin.z();
 
-				joint =(cv::Mat_<float>(3,1) <<x,y,z);
-				robotJoint.push_back(joint);
+				clustering::point pt;
+				pt.x = x; pt.y = y; pt.z = z;
+				//printf("Robot joint coordinate: %.3f %.3f %.3f\n", x, y, z);
+				joint = (cv::Mat_<float>(3,1) << x,y,z);
+				robotJoint.push_back(pt);
 				if(i > 0){
-					double sqrLength = pow(cv::norm(joint-oldJoint),2); // TODO: Check type
-					sqrLengthBetweenJoints.push_back(sqrLength);
+					double length = cv::norm(joint-oldJoint); // TODO: Check type
+					lengthBetweenJoints.push_back(length);
 					radiusOfCylinders.push_back(radiusOfCylinderParameter);
 				}
-				oldJoint = joint;
+				joint.copyTo(oldJoint);
+				//dJoint = joint;
 			}
-			ROS_INFO("Succesful robot position update\n");
+			ROS_INFO("Succesful robot position update");
 			return true;
 		}
 		catch(tf::TransformException ex) {
-			ROS_INFO("Failed with getting transform: %s\n", ex.what());
+			ROS_INFO("Failed with getting transform: %s", ex.what());
 			return false;	
 		}
 				
